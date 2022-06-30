@@ -1,24 +1,32 @@
 #%%
-from random import gauss
-from skimage import io
+import itertools
+from skimage import io,color
 from matplotlib import pyplot as plt
 import math
 import cv2
 import numpy as np
 
 #Reading the image in
-path = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/test_images/Lenna.jpg"
-raw_img = io.imread(path)
+path1 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/test_images/Lenna.jpg"
+path2 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/test_images/img.png"
+raw_img1 = io.imread(path1)
+raw_img2 = io.imread(path2)
 plt.figure(0)
 plt.figure(figsize=(10, 10))
-plt.title("RAW IMAGE")
-plt.imshow(raw_img)
+plt.title("RAW IMAGE 1")
+plt.imshow(raw_img1)
+plt.show()
+
+plt.figure(0)
+plt.figure(figsize=(10, 10))
+plt.title("RAW IMAGE 2")
+plt.imshow(raw_img2)
 plt.show()
 
 #Average,Gaussian and Median are LPFs
 #%%
 #Average Filter with nxn kernal
-def average_filter(raw_img,kernal_size):
+def average_filter(raw_img,kernal_size):  # sourcery skip: avoid-builtin-shadow
     k_s = kernal_size
     #Number of rows and columns of the image
     m,n,c = raw_img.shape
@@ -31,12 +39,12 @@ def average_filter(raw_img,kernal_size):
     #The place holder for filtered image
     img_filtered = np.zeros_like(raw_img)
 
+    #conv
     for i in range(int(k_s/2),m-int(k_s/2)):
         for j in range(int(k_s/2),n-int(k_s/2)):
             conv = 0
-            for k in range(k_s):
-                for l in range(k_s):
-                    conv += kernal[k,l] * raw_img[i - int(k_s/2) + k,j - int(k_s/2) + l]
+            for k, l in itertools.product(range(k_s), range(k_s)):
+                conv += kernal[k,l] * raw_img[i - int(k_s/2) + k,j - int(k_s/2) + l]
 
             img_filtered[i,j] = conv
 
@@ -46,11 +54,19 @@ def average_filter(raw_img,kernal_size):
 
 print("--------------------Testing Average Filter----------------------\n")
 kernal_size = 5
-avg_img = average_filter(raw_img,kernal_size)
+avg_img1 = average_filter(raw_img1,kernal_size)
 plt.figure(1)
 plt.figure(figsize=(10, 10))
 plt.title(f"Average Filtered Image of {kernal_size} x {kernal_size} kernal")
-plt.imshow(avg_img)
+plt.imshow(avg_img1)
+plt.show()
+
+kernal_size = 5
+avg_img2 = average_filter(raw_img2,kernal_size)
+plt.figure(1)
+plt.figure(figsize=(10, 10))
+plt.title(f"Average Filtered Image of {kernal_size} x {kernal_size} kernal")
+plt.imshow(avg_img2)
 plt.show()
 
 #%%
@@ -59,6 +75,7 @@ plt.show()
 # i.e. spliting a 2D gaussian kernal
 # into 2 1D gaussian filters
 def gaussian_filter(raw_img,sigma,mu,kernal_size):
+    # sourcery skip: avoid-builtin-shadow
     img_result = np.zeros_like(raw_img)
     #Number of rows and columns of the image
     m,n,c = raw_img.shape
@@ -74,13 +91,12 @@ def gaussian_filter(raw_img,sigma,mu,kernal_size):
     sum = np.sum(gaussian_kernal)
     gaussian_kernal = gaussian_kernal/sum
 
-    #Apply the filter to the raw_image
+    #Apply the filter to the raw_image, conv img with filter
     for i in range(int(k_s/2) , m-int(k_s/2)):
         for j in range(int(k_s/2) , n-int(k_s/2)):
             conv = 0
-            for k in range(k_s):
-                for l in range(k_s):
-                    conv += raw_img[i-int(k_s/2) + k, j- int(k_s/2) + l] * gaussian_kernal[k,l]
+            for k, l in itertools.product(range(k_s), range(k_s)):
+                conv += raw_img[i-int(k_s/2) + k, j- int(k_s/2) + l] * gaussian_kernal[k,l]
 
             img_result[i,j] = conv
 
@@ -91,11 +107,18 @@ kernal_size = 3
 mean = 1.5
 var = 4
 
-gau_filtered_img = gaussian_filter(raw_img,var,mean,kernal_size)
+gau_filtered_img1 = gaussian_filter(raw_img1,var,mean,kernal_size)
 plt.figure(2)
 plt.figure(figsize=(10, 10))
-plt.title(f"Gaussian Filtered Image of {kernal_size} x {kernal_size} kernal")
-plt.imshow(gau_filtered_img)
+plt.title(f"Gaussian Filtered Image of {kernal_size} x {kernal_size} kernal with variance = {var}, mean = {mean}")
+plt.imshow(gau_filtered_img1)
+plt.show()
+
+gau_filtered_img2 = gaussian_filter(raw_img2,var,mean,kernal_size)
+plt.figure(2)
+plt.figure(figsize=(10, 10))
+plt.title(f"Gaussian Filtered Image of {kernal_size} x {kernal_size} kernal with variance = {var}, mean = {mean}")
+plt.imshow(gau_filtered_img2)
 plt.show()
 
 #%%
@@ -127,9 +150,9 @@ def median_filter(raw_img, kernal_size):
             kernal_g = kernal_g.flatten()
             kernal_b = kernal_b.flatten()
 
-            median_r = sorted(kernal_r)[int(len(kernal_r)/2)]
-            median_g = sorted(kernal_g)[int(len(kernal_g)/2)]
-            median_b = sorted(kernal_b)[int(len(kernal_b)/2)]
+            median_r = sorted(kernal_r)[len(kernal_r) // 2]
+            median_g = sorted(kernal_g)[len(kernal_g) // 2]
+            median_b = sorted(kernal_b)[len(kernal_b) // 2]
 
             img_result[i,j] = [median_r,median_g,median_b]
 
@@ -140,21 +163,110 @@ def median_filter(raw_img, kernal_size):
 print("----------Testing Median Filter-------\n")
 kernal_size = 3
 
-median_filtered_img = median_filter(raw_img,kernal_size)
+median_filtered_img1 = median_filter(raw_img1,kernal_size)
 plt.figure(3)
 plt.figure(figsize=(10, 10))
 plt.title(f"Median Filtered Image of {kernal_size} x {kernal_size} kernal")
-plt.imshow(median_filtered_img)
+plt.imshow(median_filtered_img1)
 plt.show()
 
-#%%
-#Sobel Filter
+median_filtered_img2 = median_filter(raw_img2,kernal_size)
+plt.figure(3)
+plt.figure(figsize=(10, 10))
+plt.title(f"Median Filtered Image of {kernal_size} x {kernal_size} kernal")
+plt.imshow(median_filtered_img2)
+plt.show()
 
 
 #%%
-#Canny Filter
+#Spatial Filter for Edge detection, sobel is a grayscale operator which detects the gradients using 2 kernals of Gx & Gy
+#Sobel Filter,implemented to find gradients,which use sobel operator
+#First Convolve with 2 Sobel opearator in Gx and Gy then find the norm of them by setting the threshold value
+#In practice, we usually pass through gaussian filter before really using sobel filter
+def Sobel_filter(grey_img,threshold):
+    k_s = 3
+    Gy = np.array([[1,2,1],[0,0,0],[-1,-2,-1]])
+    Gx = np.array([[1,0,-1],[2,0,-2],[1,0,-1]])
+
+    processed_img = np.zeros_like(grey_img)
+    m,n = grey_img.shape
+
+    for i in range(k_s//2,m-(k_s//2)):
+        for j in range(k_s//2,n-(k_s//2)):
+            grad_Y = 0
+            grad_X = 0
+            for k, l in itertools.product(range(k_s//2), range(k_s//2)):
+                grad_Y += Gy[k,l] * grey_img[i - k_s//2 + k ,j - k//2 + l]
+                grad_X += Gx[k,l] * grey_img[i - k_s//2 + k ,j - k//2 + l]
+
+            processed_img[i,j] = 255 if (((grad_X**2 + grad_Y**2) ** (1/2)) > threshold) else 0
+
+    return processed_img
+
+print("----------Reading Grey Scale Image-------\n")
+#Reading grey image in
+path1 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/test_images/Lenna.jpg"
+path2 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/test_images/img.png"
+grey_img1 = cv2.imread(path1,0)
+grey_img2 = cv2.imread(path2,0)
+plt.imshow(grey_img1,cmap = 'gray')
+plt.imshow(grey_img2,cmap = 'gray')
+plt.show()
+
+threshold = 160
+print(f"----------Testing Sobel Filter-------\n")
+sobel_filtered_img1 = Sobel_filter(grey_img1,threshold)
+plt.figure(4)
+plt.figure(figsize=(10, 10))
+plt.title(f" Sobel Filter with threshold of {threshold}")
+plt.imshow(sobel_filtered_img1,cmap = 'gray')
+plt.show()
+
+threshold = 100
+sobel_filtered_img2 = Sobel_filter(grey_img2,threshold)
+plt.figure(4)
+plt.figure(figsize=(10, 10))
+plt.title(f" Sobel Filter with threshold of {threshold}")
+plt.imshow(sobel_filtered_img2,cmap = 'gray')
+plt.show()
 
 
 
-#%%
-#Print the result out onto a single plot
+#%%Plotting all onto a single figure
+fig = plt.figure(figsize=(20, 50))
+
+ax3 = fig.add_subplot(521)
+ax3.imshow(avg_img1)
+ax3.title.set_text(f'Average Filtered Image')
+
+ax4 = fig.add_subplot(522)
+ax4.imshow(avg_img2)
+ax4.title.set_text(f'Average Filtered Image')
+
+ax5 = fig.add_subplot(523)
+ax5.imshow(gau_filtered_img1)
+ax5.title.set_text(f'Gaussian Filtered Image')
+
+ax6 = fig.add_subplot(524)
+ax6.imshow(gau_filtered_img2)
+ax6.title.set_text(f'Gaussian Filtered Image')
+
+ax7 = fig.add_subplot(525)
+ax7.imshow(median_filtered_img1)
+ax7.title.set_text(f'median Filtered Image')
+
+ax8 = fig.add_subplot(526)
+ax8.imshow(median_filtered_img2)
+ax8.title.set_text(f'median Filtered Image')
+
+ax9 = fig.add_subplot(527)
+ax9.imshow(sobel_filtered_img1,cmap = 'gray')
+ax9.title.set_text(f'Sobel Filtered Image')
+
+ax10 = fig.add_subplot(528)
+ax10.imshow(sobel_filtered_img2,cmap = 'gray')
+ax10.title.set_text(f'Sobel Filtered Image')
+
+
+plt.show()
+# %%
