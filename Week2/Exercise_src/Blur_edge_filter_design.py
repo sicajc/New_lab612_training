@@ -195,9 +195,9 @@ def Sobel_filter(grey_img,threshold):
         for j in range(k_s//2,n-(k_s//2)):
             grad_Y = 0
             grad_X = 0
-            for k, l in itertools.product(range(k_s//2), range(k_s//2)):
-                grad_Y += Gy[k,l] * grey_img[i - k_s//2 + k ,j - k//2 + l]
-                grad_X += Gx[k,l] * grey_img[i - k_s//2 + k ,j - k//2 + l]
+            for k, l in itertools.product(range(k_s), range(k_s)):
+                grad_Y += Gy[k,l] * grey_img[i - k_s//2 + k ,j - k_s//2 + l]
+                grad_X += Gx[k,l] * grey_img[i - k_s//2 + k ,j - k_s//2 + l]
 
             processed_img[i,j] = 255 if (((grad_X**2 + grad_Y**2) ** (1/2)) > threshold) else 0
 
@@ -210,10 +210,11 @@ path2 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/test_images/img.png"
 grey_img1 = cv2.imread(path1,0)
 grey_img2 = cv2.imread(path2,0)
 plt.imshow(grey_img1,cmap = 'gray')
+plt.show()
 plt.imshow(grey_img2,cmap = 'gray')
 plt.show()
 
-threshold = 160
+threshold = 150
 print(f"----------Testing Sobel Filter-------\n")
 sobel_filtered_img1 = Sobel_filter(grey_img1,threshold)
 plt.figure(4)
@@ -222,7 +223,7 @@ plt.title(f" Sobel Filter with threshold of {threshold}")
 plt.imshow(sobel_filtered_img1,cmap = 'gray')
 plt.show()
 
-threshold = 100
+threshold = 240
 sobel_filtered_img2 = Sobel_filter(grey_img2,threshold)
 plt.figure(4)
 plt.figure(figsize=(10, 10))
