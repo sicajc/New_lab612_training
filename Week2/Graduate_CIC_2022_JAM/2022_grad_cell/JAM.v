@@ -7,6 +7,7 @@ module JAM (
            output reg [3:0] MatchCount,
            output reg [9:0] MinCost,
            output reg Valid );
+
 parameter MAX_COMBINATIONS = 40320;
 
 //Work_Calculator_states
