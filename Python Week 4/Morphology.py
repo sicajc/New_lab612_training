@@ -10,7 +10,6 @@ class Morphology:
         return np.where(rawImg>128,1,0)
 
     def Dilation(rawImg,kernalSize):
-        print("-----------------------Dilation--------------------\n")
         #Using 3x3 SE, reflect B about its Origin then shift it by Z, this is as mathematical expression
         #Only if all pixel of SubBlock doesn't match with convovledResult using SE puts a 0, else puts 1
         height , width = rawImg.shape
@@ -24,14 +23,13 @@ class Morphology:
             for j in range(KERNAL_MID,width - KERNAL_MID):
                 imgSubBlock = rawImg[i - KERNAL_MID: i + KERNAL_MID + 1 , j - KERNAL_MID : j + KERNAL_MID + 1]
                 convovledResult = imgSubBlock * structuringElement
-                convovledResult_SubBlock_All_Different = (imgSubBlock != convovledResult).all()
+                #convovledResult_SubBlock_All_Different = not (imgSubBlock != convovledResult).all()
 
-                imgDilated[i,j] = 0 if convovledResult_SubBlock_All_Different else 1
+                imgDilated[i,j] = np.max(convovledResult)
 
         return imgDilated
 
     def Erosion(rawImg,kernalSize):
-        print("-----------------------Erosion--------------------\n")
         #Using 3x3 SE
         #If all pixel matches with the result after img Convoling with SE, puts 1 else puts 0.
         height , width = rawImg.shape
@@ -46,35 +44,32 @@ class Morphology:
                 imgSubBlock = rawImg[i - KERNAL_MID: i + KERNAL_MID + 1 , j - KERNAL_MID : j + KERNAL_MID + 1]
                 convovledResult = imgSubBlock * structuringElement
 
-                convovledResult_SubBlock_Equal = np.array_equal(convovledResult, imgSubBlock)
+                #convovledResult_SubBlock_Equal = np.array_equal(convovledResult, imgSubBlock)
 
-                imgEroded[i,j] = 0 if convovledResult_SubBlock_Equal else 1
+                imgEroded[i,j] = np.min(convovledResult)
 
         return imgEroded
 
 
-    def Opening(self,rawImg,kernalSize):
-        print("-----------------------Opening--------------------\n")
+    def Opening(rawImg,kernalSize):
     #First perform erosion then perform dilation
-        imgEroded =  self.Erosion(rawImg,kernalSize)
+        imgEroded =  Morphology.Erosion(rawImg,kernalSize)
 
-        return self.Dilation(imgEroded,kernalSize)
+        return Morphology.Dilation(imgEroded,kernalSize)
 
 
-    def Closing(self,rawImg,kernalSize):
-        print("-----------------------Closing--------------------\n")
+    def Closing(rawImg,kernalSize):
     #First perform dilation then perform erosion
-        imgDilated =  self.Erosion(rawImg,kernalSize)
+        imgDilated =  Morphology.Dilation(rawImg,kernalSize)
 
-        return self.Erosion(imgDilated,kernalSize)
+        return Morphology.Erosion(imgDilated,kernalSize)
 
 
-    def BoundaryExtraction(self,rawImg,kernalSize):
-        print("-----------------------BoundaryExtraction--------------------\n")
+    def BoundaryExtraction(rawImg,kernalSize):
     #1. Perform erosion of the input image
-        imgEroded =  self.Erosion(rawImg,kernalSize)
+        imgEroded =  Morphology.Erosion(rawImg,kernalSize)
     #2. Subtract the eroded image from the original Image
-        imgEdged = rawImg - imgEroded
+        imgEdged = Morphology.Opening(rawImg,kernalSize) - imgEroded
 
         return imgEdged
 
@@ -111,8 +106,8 @@ plt.title("Binary IMAGE 2")
 plt.imshow(img2Binary,cmap = 'gray')
 plt.show()
 #%%
-img1Dilated = Morphology.Dilation(raw_img1,KERNAL_SIZE)
-img2Dilated = Morphology.Dilation(raw_img2,KERNAL_SIZE)
+img1Dilated = Morphology.Dilation(img1Binary,KERNAL_SIZE)
+img2Dilated = Morphology.Dilation(img2Binary,KERNAL_SIZE)
 
 plt.figure(0)
 plt.figure(figsize=(10, 10))
@@ -127,8 +122,8 @@ plt.imshow(img2Dilated,cmap = 'gray')
 plt.show()
 
 # %%
-img1Eroded = Morphology.Erosion(raw_img1,KERNAL_SIZE)
-img2Eroded = Morphology.Erosion(raw_img2,KERNAL_SIZE)
+img1Eroded = Morphology.Erosion(img1Binary,KERNAL_SIZE)
+img2Eroded = Morphology.Erosion(img2Binary,KERNAL_SIZE)
 
 plt.figure(0)
 plt.figure(figsize=(10, 10))
@@ -143,3 +138,48 @@ plt.imshow(img2Eroded,cmap = 'gray')
 plt.show()
 
 # %%
+img1Opening = Morphology.Opening(img1Binary,KERNAL_SIZE)
+img2Opening = Morphology.Opening(img2Binary,KERNAL_SIZE)
+
+plt.figure(0)
+plt.figure(figsize=(10, 10))
+plt.title("Opening IMAGE 1")
+plt.imshow(img1Opening,cmap = 'gray')
+plt.show()
+
+plt.figure(0)
+plt.figure(figsize=(10, 10))
+plt.title("Opening IMAGE 2")
+plt.imshow(img2Opening,cmap = 'gray')
+plt.show()
+
+#%%
+img1Closing = Morphology.Closing(img1Binary,KERNAL_SIZE)
+img2Closing = Morphology.Closing(img2Binary,KERNAL_SIZE)
+
+plt.figure(0)
+plt.figure(figsize=(10, 10))
+plt.title("Closing IMAGE 1")
+plt.imshow(img1Closing,cmap = 'gray')
+plt.show()
+
+plt.figure(0)
+plt.figure(figsize=(10, 10))
+plt.title("Closing IMAGE 2")
+plt.imshow(img2Closing,cmap = 'gray')
+plt.show()
+#%%
+img1BoundaryExtraction = Morphology.BoundaryExtraction(img1Binary,KERNAL_SIZE)
+img2BoundaryExtraction = Morphology.BoundaryExtraction(img2Binary,KERNAL_SIZE)
+
+plt.figure(0)
+plt.figure(figsize=(10, 10))
+plt.title("Boundary Extracted IMAGE 1")
+plt.imshow(img1BoundaryExtraction,cmap = 'gray')
+plt.show()
+
+plt.figure(0)
+plt.figure(figsize=(10, 10))
+plt.title("Boundary Extracted IMAGE 2")
+plt.imshow(img2BoundaryExtraction,cmap = 'gray')
+plt.show()
