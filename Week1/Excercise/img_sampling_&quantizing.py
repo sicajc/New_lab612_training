@@ -15,11 +15,7 @@ class smpling_quantizing(object):
         sampled_img = np.zeros_like(img)
         for i in range(img.shape[0]):
             for j in range(img.shape[1]):
-                if(j % 2 == 0):
-                    sampled_img[i, j] = img[i, j]
-                else:
-                    sampled_img[i, j] = np.zeros_like(img[0, 0])
-
+                sampled_img[i, j] = img[i, j] if (j % 2 == 0) else np.zeros_like(img[0, 0])
         return sampled_img
 
     def down_sampling(self, img, down_sample_factor):
@@ -28,8 +24,8 @@ class smpling_quantizing(object):
         down_sampled_img = np.zeros_like(img)
         img_iterator_i = 0
         for i in range(img.shape[0]):
-            img_iterator_j = 0
-            if(i % down_sample_factor == 0):
+            if (i % down_sample_factor == 0):
+                img_iterator_j = 0
                 for j in range(img.shape[1]):
                     if(j % down_sample_factor == 0):
                         down_sampled_img[img_iterator_i,
