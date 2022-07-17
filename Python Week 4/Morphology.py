@@ -2,7 +2,6 @@
 import itertools
 from skimage import io,color
 from matplotlib import pyplot as plt
-import math
 import cv2
 import numpy as np
 class Morphology:

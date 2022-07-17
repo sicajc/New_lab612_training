@@ -10,6 +10,7 @@ class HuffmanCoding:
         self.heap = []
         self.codes = {}
 
+
     class HeapNode:
         def __init__(self,intensity,freq):
             self.intensity = intensity
