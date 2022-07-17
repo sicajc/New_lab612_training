@@ -6,8 +6,8 @@ import math
 import cv2
 import numpy as np
 class Morphology:
-    def ConvertToBinary(rawImg):
-        return np.where(rawImg>128,1,0)
+    def ConvertToBinary(rawImg,threshold):
+        return np.where(rawImg>threshold,1,0)
 
     def Dilation(rawImg,kernalSize):
         #Using 3x3 SE, reflect B about its Origin then shift it by Z, this is as mathematical expression
@@ -73,6 +73,7 @@ class Morphology:
 
         return imgEdged
 
+threshold = 32
 KERNAL_SIZE = 3
 path1 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Python Week 4/morphology_1.png"
 path2 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Python Week 4/morphology.png"
@@ -91,18 +92,18 @@ plt.title("RAW IMAGE 2")
 plt.imshow(raw_img2,cmap = 'gray')
 plt.show()
 #%%
-img1Binary = Morphology.ConvertToBinary(raw_img1)
-img2Binary = Morphology.ConvertToBinary(raw_img2)
+img1Binary = Morphology.ConvertToBinary(raw_img1,threshold)
+img2Binary = Morphology.ConvertToBinary(raw_img2,threshold)
 
 plt.figure(0)
 plt.figure(figsize=(10, 10))
-plt.title("Binary IMAGE 1")
+plt.title(f"Binary IMAGE 1 with threshold of {threshold}\n")
 plt.imshow(img1Binary,cmap = 'gray')
 plt.show()
 
 plt.figure(0)
 plt.figure(figsize=(10, 10))
-plt.title("Binary IMAGE 2")
+plt.title(f"Binary IMAGE 2 with threshold of {threshold}\n")
 plt.imshow(img2Binary,cmap = 'gray')
 plt.show()
 #%%

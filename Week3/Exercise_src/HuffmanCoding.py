@@ -1,7 +1,5 @@
 from igraph import *
 import heapq
-import os
-import itertools
 from matplotlib import pyplot as plt
 import cv2
 import numpy as np
