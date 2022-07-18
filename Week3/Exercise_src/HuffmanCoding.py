@@ -118,5 +118,11 @@ path1 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week3/lena.bmp"
 test = HuffmanCoding(path1)
 test.Compression()
 
+keys = list(test.codes.keys())
+encoded_bits = list(test.codes.values())
+
+# plt.bar(range(len(test.codes)), encoded_bits, tick_label=keys)
+# plt.show()
+
 with open('codedResult.txt','w') as file:
     file.write(json.dumps(test.codes))
