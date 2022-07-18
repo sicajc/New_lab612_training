@@ -39,10 +39,10 @@ class HuffmanCoding:
         img = rawImg.ravel()
 
         for intensity in img:
-            if intensity in self.frequencyDict:
-                self.frequencyDict[intensity] += 1
-            else:
-                self.frequencyDict[intensity] = 1
+            if intensity not in self.frequencyDict:
+                self.frequencyDict[intensity] = 0
+
+            self.frequencyDict[intensity] += 1
 
         return self.frequencyDict
 
