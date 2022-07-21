@@ -34,7 +34,13 @@ class HuffmanCoding:
 
     #Compression function
     def CreateFrequencyDictionary(self):
+
         rawImg = cv2.imread(self.path,0)
+        plt.figure(0)
+        plt.figure(figsize=(10, 10))
+        plt.title("Raw Image")
+        plt.imshow(rawImg,cmap = 'gray')
+        plt.show()
 
         img = rawImg.ravel()
 
@@ -92,6 +98,10 @@ class HuffmanCoding:
         print(f"Code: \n{self.codes}\n")
 
     def VisualiseHuffmanTree(self):
+        # keys = list(test.codes.keys())
+        # encoded_bits = list(test.codes.values())
+        # plt.bar(range(len(test.codes)), encoded_bits, tick_label=keys)
+        # plt.show()
         return
 
     def OutputFile(self):
@@ -99,8 +109,8 @@ class HuffmanCoding:
 
     def ChangeType_OrderOfDictionary(self):
         self.codes = dict(sorted(self.codes.items()))
-        test.codes = {str(key):str(encoded_str) for key,encoded_str in test.codes.items()}
-
+        test.codes = {int(key):int(encoded_str) for key,encoded_str in test.codes.items()}
+        self.VisualiseHuffmanTree()
 
     def Compression(self):
         self.CreateFrequencyDictionary()
@@ -118,11 +128,7 @@ path1 = "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week3/lena.bmp"
 test = HuffmanCoding(path1)
 test.Compression()
 
-keys = list(test.codes.keys())
-encoded_bits = list(test.codes.values())
 
-# plt.bar(range(len(test.codes)), encoded_bits, tick_label=keys)
-# plt.show()
 
 with open('codedResult.txt','w') as file:
     file.write(json.dumps(test.codes))
