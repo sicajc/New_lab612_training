@@ -138,14 +138,41 @@ end
 wire sharedCnt_w = (L0_LocalZeroPadConv_DoneFlag || L0_K0_BIAS_RELU_WB || L0_K1_BIAS_RELU_WB
                     || L12_K0_MaxPoolingCompare_DoneFlag || L12_K1_MaxPoolingCompare_DoneFlag) ? 'd0 : (sharedCnt + 'd1);
 
+
+reg[6:0] imgColPTR_w;
+reg[6:0] imgRowPTR_w;
+
 always @(posedge clk or posedge reset)
 begin
-    imgColPTR_r <= reset ? 'd0 : imgColPTR_w;
-    imgRowPTR_r <= reset ? 'd0 : imgRowPTR_w;
+    imgColPTR_r <= reset || L12_DoneFlag ? 'd1 : L0_DoneFlag ?  'd0 : imgColPTR_w;
+    imgRowPTR_r <= reset || L12_DoneFlag ? 'd1 : L0_DoneFlag ?  'd0 : imgRowPTR_w;
 end
 
-wire imgColPTR_w = ;
-wire imgRowPTR_w = ;
+always @(*)
+begin
+    case(mainCTR_current_state)
+        L0_K1_BIAS_RELU_WB:
+        begin
+            imgColPTR_w  = L0_imgRightBoundReach_Flag ? 'd1 : imgColPTR_r + 'd1;
+            imgRowPTR_w  = L0_imgRightBoundReach_Flag ? (imgRowPTR_r + 'd1) : imgRowPTR_r;
+        end
+        L12_K1_MAXPOOLING_WB:
+        begin
+            imgColPTR_w  = L12_imgRightBoundReach_Flag ? 'd0 : imgColPTR_r + 'd1;
+            imgRowPTR_w  = L12_imgRightBoundReach_Flag ? (imgRowPTR_r + 'd1) : imgRowPTR_r;
+        end
+        default:
+        begin
+            imgColPTR_w  = imgColPTR_r;
+            imgRowPTR_w  = imgRowPTR_r;
+        end
+    endcase
+end
+
+
+
+
+
 
 
 
