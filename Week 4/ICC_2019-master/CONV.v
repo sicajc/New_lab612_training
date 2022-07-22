@@ -1,5 +1,4 @@
 `timescale 1ns/10ps
-
 module  CONV(
             clk,
             reset,
@@ -45,7 +44,7 @@ parameter KERNAL_MID   = 1;
 parameter IMAGE_WIDTH_HEIGHT = 64;
 parameter PIXELS_OF_KERNAL = 'd8;
 parameter MP_KERNAL_SIZE = 'd3;
-parameter IMG_RD_DONE = 4096;
+parameter MP_IMG_RD_DONE = 1023;
 parameter DATA_WIDTH = 20;
 parameter ADDR_WIDTH = 12;
 parameter BIAS = 20'hF7295;
@@ -96,10 +95,10 @@ wire STATE_L0_ZEROPAD_CONV                  =  mainCTR_current_state == L0_ZEROP
 wire STATE_L0_K0_BIAS_RELU                  =  mainCTR_current_state == L0_K0_BIAS_RELU;
 wire STATE_L0_K1_BIAS_RELU                  =  mainCTR_current_state == L0_K1_BIAS_RELU;
 wire STATE_L0_K0_WB                         =  mainCTR_current_state == L0_K0_WB;
-wire STATE_L0_K1_WB                         =   mainCTR_current_state == L0_K1_WB;
+wire STATE_L0_K1_WB                         =  mainCTR_current_state == L0_K1_WB;
 
-wire STATE_L1_K0_MAXPOOLING_COMPARE_MAX    = mainCTR_current_state == L1_K0_MAXPOOLING_COMPARE_MAX;
-wire STATE_L1_K1_MAXPOOLING_COMPARE_MAX    = mainCTR_current_state == L1_K1_MAXPOOLING_COMPARE_MAX;
+wire STATE_L1_K0_MAXPOOLING_COMPARE_MAX    =  mainCTR_current_state == L1_K0_MAXPOOLING_COMPARE_MAX;
+wire STATE_L1_K1_MAXPOOLING_COMPARE_MAX    =  mainCTR_current_state == L1_K1_MAXPOOLING_COMPARE_MAX;
 wire STATE_L1_K0_MAXPOOLING_WB             =  mainCTR_current_state == L1_K0_MAXPOOLING_WB;
 wire STATE_L1_K1_MAXPOOLING_WB             =  mainCTR_current_state == L1_K1_MAXPOOLING_WB;
 
@@ -108,8 +107,7 @@ wire STATE_L2_K1_RD                         = mainCTR_current_state == L2_K1_RD;
 wire STATE_L2_K0_WB                         = mainCTR_current_state == L2_K0_WB;
 wire STATE_L2_K1_WB                         = mainCTR_current_state == L2_K1_WB;
 
-wire STATE_DONE                             =  mainCTR_current_state == DONE;
-
+wire STATE_DONE                             = mainCTR_current_state == DONE;
 
 //FLAGS
 wire L0_LocalZeroPadConv_DoneFlag = STATE_L0_ZEROPAD_CONV ? (sharedCnt == PIXELS_OF_KERNAL) : 'd0;
@@ -122,11 +120,11 @@ wire L1_imgRightBoundReach_Flag = STATE_L1_K1_MAXPOOLING_WB ? (imgRowPTR_r == IM
 wire L1_DoneFlag = ((imgRowPTR_r == IMAGE_WIDTH_HEIGHT-1) && (imgColPTR_r == IMAGE_WIDTH_HEIGHT - 1));
 
 //Needs 1 cnt only uses sharedCnt
-wire L2_K0_flatten_DoneFlag = (sharedCnt == IMG_RD_DONE);
-wire L2_flatten_DoneFlag = (sharedCnt == IMG_RD_DONE);
+wire L2_K0_flatten_DoneFlag = (sharedCnt == MP_IMG_RD_DONE);
+wire L2_K1_flatten_DoneFlag = (sharedCnt == MP_IMG_RD_DONE);
 
 
-//MAIN_CTR
+//----------------------------------CONTROL_PATH--------------------------------//
 always @(posedge clk or posedge reset)
 begin
     mainCTR_current_state <= reset ? L0_ZEROPAD_CONV : mainCTR_next_state;
@@ -185,7 +183,7 @@ begin
         end
         L2_K1_WB:
         begin
-            mainCTR_current_state = L2_flatten_DoneFlag ? DONE : L2_K1_RD;
+            mainCTR_current_state = L2_K1_flatten_DoneFlag ? DONE : L2_K1_RD;
         end
         DONE:
         begin
@@ -209,7 +207,7 @@ end
 
 wire sharedCnt_w = (L0_LocalZeroPadConv_DoneFlag
                     || L1_K0_MaxPoolingCompare_DoneFlag || L1_K1_MaxPoolingCompare_DoneFlag || L2_K0_flatten_DoneFlag ||
-                    L2_flatten_DoneFlag) ? 'd0 : (sharedCnt + 'd1);
+                    L2_K1_flatten_DoneFlag) ? 'd0 : (sharedCnt + 'd1);
 
 //IMG_PTR
 reg[6:0] imgColPTR_w;
@@ -242,8 +240,6 @@ begin
     endcase
 end
 
-reg[11:0] STATE_L0_K0_BIAS_RELU ? conv_K0Result_r : conv_K1_Result_r;
-
 wire[11:0] addrZeroPad =  (imgColPTR_r - 'd1) + (imgRowPTR_r - 'd1) * IMAGE_WIDTH_HEIGHT;
 wire[11:0] addrMaxPooling = imgColPTR_r + imgRowPTR_r * IMAGE_WIDTH_HEIGHT;
 
@@ -264,7 +260,7 @@ begin
     case(mainCTR_current_state)
         L0_K0_WB,L0_K1_WB:
         begin
-            cdata_wr = STATE_L0_K0_BIAS_RELU ? conv_K0Result_r : conv_K1_Result_r;
+            cdata_wr = STATE_L0_K0_BIAS_RELU ? conv_K0_Result_r : conv_K1_Result_r;
             caddr_wr = addrZeroPad;
         end
         L1_K1_MAXPOOLING_WB,L1_K0_MAXPOOLING_WB:
@@ -297,11 +293,11 @@ begin
         begin
             csel = L0_MEM1_ACCESS;
         end
-        L1_K0_MAXPOOLING_WB:
+        L1_K0_MAXPOOLING_WB,L2_K0_RD:
         begin
             csel = L1_MEM0_ACCESS;
         end
-        L1_K1_MAXPOOLING_WB:
+        L1_K1_MAXPOOLING_WB,L2_K1_RD:
         begin
             csel = L1_MEM1_ACCESS;
         end
@@ -337,7 +333,7 @@ end
 //Busy
 assign busy = ((~STATE_DONE) ^ (~reset) ) ? 1 : 0 ;
 
-//DATAPATH
+//------------------------------------DATAPATH--------------------------------//
 reg signed[DATA_WIDTH-1:0] sharedReg1_r;
 reg signed[DATA_WIDTH-1:0] sharedReg2_r;
 reg signed[DATA_WIDTH-1:0] sharedReg1_wr;
@@ -350,16 +346,20 @@ wire signed[DATA_WIDTH-1:0] K1_convResult;
 wire signed[DATA_WIDTH*2 - 1 : 0] serialMultiplier1_o = multiplier1_Input1 * multiplier2_Input2;
 wire signed[DATA_WIDTH*2 - 1 : 0] serialMultiplier2_o = multiplier2_Input1 * multiplier2_Input2;
 
-wire signed[DATA_WIDTH - 1 : 0]multiplier1_Input1;
-reg signed[DATA_WIDTH - 1 : 0]multiplier1_Input2;
-wire signed[DATA_WIDTH - 1 : 0]multiplier2_Input1;
-reg signed[DATA_WIDTH - 1 : 0]multiplier2_Input2;
+wire signed[DATA_WIDTH - 1 : 0] multiplier1_Input1;
+reg signed[DATA_WIDTH - 1 : 0]  multiplier1_Input2;
+wire signed[DATA_WIDTH - 1 : 0] multiplier2_Input1;
+reg signed[DATA_WIDTH - 1 : 0]  multiplier2_Input2;
 
 //1 signed adder for BIAS_ReLU
 wire signed[DATA_WIDTH-1:0] signedAdder_o = signedAdder_Input1 + BIAS;
 wire signed[DATA_WIDTH-1:0] signedAdder_Input1;
 
-assign signedAdder_Input1 = STATE_L0_K0_BIAS_RELU ? conv_K0Result_r : conv_K1_Result_r;
+assign signedAdder_Input1 = STATE_L0_K0_BIAS_RELU ? conv_K0_Result_r : conv_K1_Result_r;
+
+//L0 Conv_result
+reg[DATA_WIDTH-1:0] conv_K0_Result_r;
+reg[DATA_WIDTH-1:0] conv_K1_Result_r;
 
 //1 Comparator for BIAS_ReLU & Maxpooling
 wire signed compare_gt = comparatorInput1 > comparatorInput2 ;
@@ -368,6 +368,9 @@ reg[DATA_WIDTH-1:0] comparatorInput2;
 
 wire compare_gt_zero = STATE_L0_K0_BIAS_RELU || STATE_L0_K1_BIAS_RELU ? 'd0 : compare_gt;
 wire compare_gt_tempMax = STATE_L1_K0_MAXPOOLING_COMPARE_MAX || STATE_L1_K1_MAXPOOLING_COMPARE_MAX ? 'd0 : compare_gt;
+
+//MaxPooling
+reg[DATA_WIDTH-1:0] tempMax_r;
 
 //sharedReg1_r,sharedReg2_r
 always @(posedge clk or posedge reset)
@@ -486,7 +489,7 @@ begin
     case(mainCTR_current_state)
         L0_K0_BIAS_RELU,L0_K1_BIAS_RELU:
         begin
-            comparatorInput1 = STATE_L0_K0_BIAS_RELU ? conv_K0Result_r : conv_K1_Result_r;
+            comparatorInput1 = STATE_L0_K0_BIAS_RELU ? conv_K0_Result_r : conv_K1_Result_r;
             comparatorInput2 = ZERO;
         end
         L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX:
@@ -505,6 +508,7 @@ end
 //Convolution results
 assign K0_convResult   =  STATE_L0_ZEROPAD_CONV || STATE_L0_K0_BIAS_RELU ? sharedReg1_r :'d0;
 assign K1_convResult   =  STATE_L0_ZEROPAD_CONV || STATE_L0_K1_BIAS_RELU ? sharedReg2_r :'d0;
+
 
 
 endmodule
