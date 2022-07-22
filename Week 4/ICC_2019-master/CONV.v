@@ -242,7 +242,7 @@ begin
     endcase
 end
 
-reg[11:0] conv_result_r;
+reg[11:0] STATE_L0_K0_BIAS_RELU ? conv_K0Result_r : conv_K1_Result_r;
 
 wire[11:0] addrZeroPad =  (imgColPTR_r - 'd1) + (imgRowPTR_r - 'd1) * IMAGE_WIDTH_HEIGHT;
 wire[11:0] addrMaxPooling = imgColPTR_r + imgRowPTR_r * IMAGE_WIDTH_HEIGHT;
@@ -264,7 +264,7 @@ begin
     case(mainCTR_current_state)
         L0_K0_WB,L0_K1_WB:
         begin
-            cdata_wr = conv_result_r;
+            cdata_wr = STATE_L0_K0_BIAS_RELU ? conv_K0Result_r : conv_K1_Result_r;
             caddr_wr = addrZeroPad;
         end
         L1_K1_MAXPOOLING_WB,L1_K0_MAXPOOLING_WB:
@@ -357,7 +357,9 @@ reg signed[DATA_WIDTH - 1 : 0]multiplier2_Input2;
 
 //1 signed adder for BIAS_ReLU
 wire signed[DATA_WIDTH-1:0] signedAdder_o = signedAdder_Input1 + BIAS;
-reg signed[DATA_WIDTH-1:0] signedAdder_Input1;
+wire signed[DATA_WIDTH-1:0] signedAdder_Input1;
+
+assign signedAdder_Input1 = STATE_L0_K0_BIAS_RELU ? conv_K0Result_r : conv_K1_Result_r;
 
 //1 Comparator for BIAS_ReLU & Maxpooling
 wire signed compare_gt = comparatorInput1 > comparatorInput2 ;
@@ -484,7 +486,7 @@ begin
     case(mainCTR_current_state)
         L0_K0_BIAS_RELU,L0_K1_BIAS_RELU:
         begin
-            comparatorInput1 = conv_result_r;
+            comparatorInput1 = STATE_L0_K0_BIAS_RELU ? conv_K0Result_r : conv_K1_Result_r;
             comparatorInput2 = ZERO;
         end
         L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX:
