@@ -47,7 +47,7 @@ parameter MP_IMG_RD_DONE = 1023;
 parameter DATA_WIDTH = 20;
 parameter ADDR_WIDTH = 12;
 parameter BIAS = 20'hF7295;
-parameter PTR_LENGTH = 7;
+parameter PTR_LENGTH = 8;
 
 //STATES
 parameter L0_ZEROPAD_CONV = 'd0;
@@ -111,13 +111,13 @@ wire STATE_DONE                             = mainCTR_current_state == DONE;
 
 //FLAGS
 wire L0_LocalZeroPadConv_DoneFlag = STATE_L0_ZEROPAD_CONV ? (sharedCnt == PIXELS_OF_KERNAL) : 'd0;
-wire L0_DoneFlag = ((imgRowPTR_rd == IMAGE_WIDTH_HEIGHT) && (imgColPTR_rd == IMAGE_WIDTH_HEIGHT)) ;
-wire L0_imgRightBoundReach_Flag = STATE_L0_K1_BIAS_RELU ? (imgRowPTR_rd == IMAGE_WIDTH_HEIGHT) : 'd0;
+wire L0_DoneFlag = STATE_L0_K1_WB ? ((imgRowPTR_rd == IMAGE_WIDTH_HEIGHT) && (imgColPTR_rd == IMAGE_WIDTH_HEIGHT)) : 'd0;
+wire L0_imgRightBoundReach_Flag = STATE_L0_K1_WB ? (imgColPTR_rd == IMAGE_WIDTH_HEIGHT) : 'd0;
 
 wire L1_K0_MaxPoolingCompare_DoneFlag = STATE_L1_K0_MAXPOOLING_COMPARE_MAX ? (sharedCnt == MP_KERNAL_SIZE) :'d0;
 wire L1_K1_MaxPoolingCompare_DoneFlag = STATE_L1_K1_MAXPOOLING_COMPARE_MAX ? (sharedCnt == MP_KERNAL_SIZE) :'d0;
 wire L1_imgRightBoundReach_Flag = STATE_L1_K1_MAXPOOLING_WB ? (imgRowPTR_rd == IMAGE_WIDTH_HEIGHT - 1) :'d0;
-wire L1_DoneFlag = ((imgRowPTR_rd == IMAGE_WIDTH_HEIGHT-1) && (imgColPTR_rd == IMAGE_WIDTH_HEIGHT - 1));
+wire L1_DoneFlag = STATE_L1_K0_MAXPOOLING_WB || STATE_L1_K0_MAXPOOLING_WB ? ((imgRowPTR_rd == IMAGE_WIDTH_HEIGHT-1) && (imgColPTR_rd == IMAGE_WIDTH_HEIGHT - 1)) : 'd0;
 
 //Needs 1 cnt only uses sharedCnt
 wire L2_K0_flatten_DoneFlag = (sharedCnt == MP_IMG_RD_DONE);
@@ -235,7 +235,7 @@ end
 always @(*)
 begin
     case(mainCTR_current_state)
-        L0_K1_BIAS_RELU:
+        L0_K1_WB:
         begin
             imgColPTR_wr  = L0_imgRightBoundReach_Flag ? 'd1 : imgColPTR_rd + 'd1;
             imgRowPTR_wr  = L0_imgRightBoundReach_Flag ? (imgRowPTR_rd + 'd1) : imgRowPTR_rd;
@@ -316,6 +316,34 @@ begin
     endcase
 end
 
+//cdata_wr and caddr_wr
+always @(*)
+begin
+    case(mainCTR_current_state)
+        L0_K0_WB,L0_K1_WB:
+        begin
+            cdata_wr = L0_Result_rd;
+            caddr_wr = zeroPadWriteAddr;
+        end
+        L2_K0_WB:
+        begin
+            cdata_wr = K0_K1_temp_rd;
+            caddr_wr = L2_K0_addr;
+        end
+        L2_K1_WB:
+        begin
+            cdata_wr = K0_K1_temp_rd;
+            caddr_wr = L2_K1_addr;
+        end
+        default:
+        begin
+            cdata_wr = 0;
+            caddr_wr = 0;
+        end
+    endcase
+end
+//caddr_rd , cdata_rd
+
 //Busy
 always @(*)
 begin
@@ -368,6 +396,33 @@ always @(posedge clk or posedge reset)
 begin
     sharedReg1_rd <= reset ? 'd0 : sharedReg1Ld ? sharedReg1_wr : sharedReg1_rd;
     sharedReg2_rd <= reset ? 'd0 : sharedReg2Ld ? sharedReg2_wr : sharedReg2_rd;
+end
+
+//sharedReg1_wr & sharedReg2_wr
+always @(*)
+begin
+    case(mainCTR_current_state)
+        L0_ZEROPAD_CONV:
+        begin
+            sharedReg1_wr = conv_K0_Result_wr;
+            sharedReg2_wr = conv_K1_Result_wr;
+        end
+        L0_K0_BIAS_RELU,L0_K1_BIAS_RELU:
+        begin
+            sharedReg1_wr = ReLU_result_wr;
+            sharedReg2_wr = sharedReg2_rd;
+        end
+        L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX:
+        begin
+            sharedReg1_wr = tempMax_wr;
+            sharedReg2_wr = 0;
+        end
+        default:
+        begin
+            sharedReg1_wr = sharedReg1_rd;
+            sharedReg2_wr = sharedReg2_rd;
+        end
+    endcase
 end
 
 //2 Multipliers for ZeroPadConv, uses input2 as kernal value input
@@ -503,22 +558,6 @@ begin
     end
 end
 
-
-
-always @(*)
-begin
-    if(STATE_L0_ZEROPAD_CONV)
-    begin
-        sharedReg1_wr = conv_K0_Result_wr;
-        sharedReg2_wr = conv_K1_Result_wr;
-    end
-    else
-    begin
-        sharedReg1_wr = 'dz;
-        sharedReg2_wr = 'dz;
-    end
-end
-
 //Giving KERNAL VALUES to multipliers
 always @(*)
 begin
@@ -638,34 +677,8 @@ end
 
 assign ReLU_result_wr = compare_gt_ZERO ? signedAdder_o : 'd0;
 
-always @(*)
-begin
-    if(STATE_L0_K0_BIAS_RELU||STATE_L0_K1_BIAS_RELU)
-    begin
-        sharedReg1_wr = ReLU_result_wr;
-    end
-    else
-    begin
-        sharedReg1_wr = 'dz;
-    end
-end
-
 //K0 K1 WB
 wire[DATA_WIDTH-1:0] L0_Result_rd = STATE_L0_K0_WB ? conv_K0_Result_rd : (STATE_L0_K1_WB ? conv_K1_Result_rd : 'd0);
-
-always @(*)
-begin
-    if(STATE_L0_K0_WB||STATE_L0_K1_WB)
-    begin
-        cdata_wr = L0_Result_rd;
-        caddr_wr = zeroPadWriteAddr;
-    end
-    else
-    begin
-        cdata_wr = 'dz;
-        caddr_wr = 'dz;
-    end
-end
 
 //L1
 //K0 K1 MP
@@ -687,44 +700,10 @@ end
 
 wire[DATA_WIDTH-1:0] tempMax_wr = compare_gt ? cdata_rd : tempMax_rd;
 
-always @(*)
-begin
-    if(STATE_L1_K0_MAXPOOLING_COMPARE_MAX || STATE_L1_K1_MAXPOOLING_COMPARE_MAX)
-    begin
-        sharedReg1_wr = tempMax_wr;
-    end
-    else
-    begin
-        sharedReg1_wr = 'dz;
-    end
-end
-
 //L2
 //K0,K1 RD WB
 wire[DATA_WIDTH-1:0] K0_K1_temp_rd = sharedReg1_rd;
+reg[PTR_LENGTH-1:0] L2_K0_addr,L2_K1_addr;
 
-always @(*)
-begin
-    if(STATE_L2_K0_RD || STATE_L2_K1_RD)
-    begin
-        sharedReg1_wr = cdata_rd;
-    end
-    else
-    begin
-        sharedReg1_wr = 'dz;
-    end
-end
-
-always @(*)
-begin
-    if(STATE_L2_K0_WB || STATE_L2_K1_WB)
-    begin
-        cdata_wr = K0_K1_temp_rd;
-    end
-    else
-    begin
-        cdata_wr = 'dz;
-    end
-end
 
 endmodule

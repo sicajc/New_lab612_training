@@ -1,0 +1,21 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module CONV
+WARNING: [VRFC 10-3380] identifier 'PTR_LENGTH' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:37]
+WARNING: [VRFC 10-3380] identifier 'PTR_LENGTH' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:38]
+WARNING: [VRFC 10-3380] identifier 'L0_Result_rd' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:325]
+WARNING: [VRFC 10-3380] identifier 'zeroPadWriteAddr' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:326]
+WARNING: [VRFC 10-3380] identifier 'K0_K1_temp_rd' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:330]
+WARNING: [VRFC 10-3380] identifier 'L2_K0_addr' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:331]
+WARNING: [VRFC 10-3380] identifier 'K0_K1_temp_rd' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:335]
+WARNING: [VRFC 10-3380] identifier 'L2_K1_addr' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:336]
+WARNING: [VRFC 10-3380] identifier 'conv_K0_Result_wr' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:406]
+WARNING: [VRFC 10-3380] identifier 'conv_K1_Result_wr' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:407]
+WARNING: [VRFC 10-3380] identifier 'ReLU_result_wr' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:411]
+WARNING: [VRFC 10-3380] identifier 'tempMax_wr' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:416]
+WARNING: [VRFC 10-3380] identifier 'multiplier1_input1' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:428]
+WARNING: [VRFC 10-3380] identifier 'multiplier2_input1' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:429]
+WARNING: [VRFC 10-3380] identifier 'signedAdder_input1' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:438]
+WARNING: [VRFC 10-3380] identifier 'comparatorInput1' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/CONV.v:444]
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/testfixture.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module testfixture
+INFO: [VRFC 10-2458] undeclared symbol busy, assumed default net type wire [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/testfixture.v:54]
