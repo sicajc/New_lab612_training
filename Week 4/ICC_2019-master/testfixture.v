@@ -1,11 +1,11 @@
 `timescale 1ns/10ps
-`define CYCLE      100.0          	  // Modify your clock period here
+`define CYCLE      10.0          	  // Modify your clock period here
 `define SDFFILE    "./CONV_syn.sdf"	  // Modify your sdf file name
 `define End_CYCLE  1000000000              // Modify cycle times once your design need more cycle times!
 
-`define PAT        "./dat_univ/cnn_sti.dat"                 // Modify your "dat" directory path
-`define L0_EXP0        "./dat_univ/cnn_layer0_exp0.dat"       
-`define L1_EXP0        "./dat_univ/cnn_layer1_exp0.dat"     
+`define PAT        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/dat_univ/cnn_sti.dat"                 // Modify your "dat" directory path
+`define L0_EXP0        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/dat_univ/cnn_layer0_exp0.dat"
+`define L1_EXP0        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/dat_univ/cnn_layer1_exp0.dat"
 
 
 module testfixture;
@@ -13,10 +13,10 @@ module testfixture;
 
 reg	[19:0]	PAT	[0:4095];
 
-reg	[19:0]	L0_EXP0	[0:4095];  
-reg	[19:0]	L0_MEM0	[0:4095]; 
+reg	[19:0]	L0_EXP0	[0:4095];
+reg	[19:0]	L0_MEM0	[0:4095];
 
- 
+
 reg	[19:0]	L1_EXP0	[0:1023];
 reg	[19:0]	L1_MEM0	[0:1023];
 
@@ -51,8 +51,8 @@ reg		check0=0, check1=0;
 CONV u_CONV(
 			.clk(clk),
 			.reset(reset),
-			.busy(busy),	
-			.ready(ready),	
+			.busy(busy),
+			.ready(ready),
 			.iaddr(iaddr),
 			.idata(idata),
 			.cwr(cwr),
@@ -63,23 +63,23 @@ CONV u_CONV(
 			.caddr_rd(caddr_rd),
 			.csel(csel)
 			);
-			
+
 
 
 always begin #(`CYCLE/2) clk = ~clk; end
 
-initial begin
-	$fsdbDumpfile("CONV.fsdb");
-	$fsdbDumpvars;
-	$fsdbDumpMDA;
-end
+// initial begin
+// 	$fsdbDumpfile("CONV.fsdb");
+// 	$fsdbDumpvars;
+// 	$fsdbDumpMDA;
+// end
 
 initial begin  // global control
 	$display("-----------------------------------------------------\n");
  	$display("START!!! Simulation Start .....\n");
  	$display("-----------------------------------------------------\n");
 	@(negedge clk); #1; reset = 1'b1;  ready = 1'b1;
-   	#(`CYCLE*3);  #1;   reset = 1'b0;  
+   	#(`CYCLE*3);  #1;   reset = 1'b0;
    	wait(busy == 1); #(`CYCLE/4); ready = 1'b0;
 end
 
@@ -90,7 +90,7 @@ initial begin // initial pattern and expected result
 		$readmemh(`L0_EXP0, L0_EXP0);
 		$readmemh(`L1_EXP0, L1_EXP0);
 	end
-		
+
 end
 
 always@(negedge clk) begin // generate the stimulus input data
@@ -109,11 +109,11 @@ always@(negedge clk) begin
 	end
 end
 
-always@(posedge clk) begin 
+always@(posedge clk) begin
 	if (cwr == 1) begin
 		case(csel)
 			3'b001: begin check0 <= 1; L0_MEM0[caddr_wr] <= cdata_wr; end
-			3'b011: begin check1 <= 1; L1_MEM0[caddr_wr] <= cdata_wr; end 		
+			3'b011: begin check1 <= 1; L1_MEM0[caddr_wr] <= cdata_wr; end
 		endcase
 	end
 end
@@ -123,13 +123,13 @@ end
 initial begin  	// layer 0,  conv output
 check0<= 0;
 wait(busy==1); wait(busy==0);
-if (check0 == 1) begin 
+if (check0 == 1) begin
 	err00 = 0;
 	for (p0=0; p0<=4095; p0=p0+1) begin
 		if (L0_MEM0[p0] == L0_EXP0[p0]) ;
 		else begin
 			err00 = err00 + 1;
-			begin 
+			begin
 				$display("WRONG! Layer 0 (Convolutional Output) with Kernel 0 , Pixel %d is wrong!", p0);
 				$display("               The output data is %h, but the expected data is %h ", L0_MEM0[p0], L0_EXP0[p0]);
 			end
@@ -150,7 +150,7 @@ if(check1 == 1) begin
 		if (L1_MEM0[p1] == L1_EXP0[p1]) ;
 		else begin
 			err10 = err10 + 1;
-			begin 
+			begin
 				$display("WRONG! Layer 1 (Max-pooling Output) with Kernel 0 , Pixel %d is wrong!", p1);
 				$display("               The output data is %h, but the expected data is %h ", L1_MEM0[p1], L1_EXP0[p1]);
 			end
@@ -176,7 +176,7 @@ end
 
 initial begin
       wait(busy == 1);
-      wait(busy == 0);      
+      wait(busy == 0);
     $display(" ");
 	$display("-----------------------------------------------------\n");
 	$display("--------------------- S U M M A R Y -----------------\n");
@@ -193,7 +193,5 @@ end
 
 
 
-   
+
 endmodule
-
-

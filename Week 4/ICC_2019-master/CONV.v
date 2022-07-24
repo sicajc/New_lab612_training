@@ -17,7 +17,7 @@ module  CONV(
 
 input						clk;
 input						reset         ;
-output						busy          ;
+output	reg					busy          ;
 input						ready         ;
 output [11:0]			iaddr;
 input	[19:0]				idata         ;
@@ -29,14 +29,13 @@ output	reg [11:0]			caddr_rd      ;
 input	 [19:0]				cdata_rd      ;
 output	 reg [2:0]			csel          ;
 
-//Flatten WB needs to be added
 
 //Control path
 reg[3:0] mainCTR_current_state,mainCTR_next_state;
 reg[10:0] sharedCnt;
 
-reg[6:0] imgColPTR_r;
-reg[6:0] imgRowPTR_r;
+reg[PTR_LENGTH-1:0] imgColPTR_rd;
+reg[PTR_LENGTH-1:0] imgRowPTR_rd;
 
 //CONSTANTS
 parameter KERNAL_WIDTH = 3;
@@ -48,6 +47,7 @@ parameter MP_IMG_RD_DONE = 1023;
 parameter DATA_WIDTH = 20;
 parameter ADDR_WIDTH = 12;
 parameter BIAS = 20'hF7295;
+parameter PTR_LENGTH = 7;
 
 //STATES
 parameter L0_ZEROPAD_CONV = 'd0;
@@ -111,13 +111,13 @@ wire STATE_DONE                             = mainCTR_current_state == DONE;
 
 //FLAGS
 wire L0_LocalZeroPadConv_DoneFlag = STATE_L0_ZEROPAD_CONV ? (sharedCnt == PIXELS_OF_KERNAL) : 'd0;
-wire L0_DoneFlag = ((imgRowPTR_r == IMAGE_WIDTH_HEIGHT) && (imgColPTR_r == IMAGE_WIDTH_HEIGHT)) ;
-wire L0_imgRightBoundReach_Flag = STATE_L0_K1_BIAS_RELU ? (imgRowPTR_r == IMAGE_WIDTH_HEIGHT) : 'd0;
+wire L0_DoneFlag = ((imgRowPTR_rd == IMAGE_WIDTH_HEIGHT) && (imgColPTR_rd == IMAGE_WIDTH_HEIGHT)) ;
+wire L0_imgRightBoundReach_Flag = STATE_L0_K1_BIAS_RELU ? (imgRowPTR_rd == IMAGE_WIDTH_HEIGHT) : 'd0;
 
 wire L1_K0_MaxPoolingCompare_DoneFlag = STATE_L1_K0_MAXPOOLING_COMPARE_MAX ? (sharedCnt == MP_KERNAL_SIZE) :'d0;
 wire L1_K1_MaxPoolingCompare_DoneFlag = STATE_L1_K1_MAXPOOLING_COMPARE_MAX ? (sharedCnt == MP_KERNAL_SIZE) :'d0;
-wire L1_imgRightBoundReach_Flag = STATE_L1_K1_MAXPOOLING_WB ? (imgRowPTR_r == IMAGE_WIDTH_HEIGHT - 1) :'d0;
-wire L1_DoneFlag = ((imgRowPTR_r == IMAGE_WIDTH_HEIGHT-1) && (imgColPTR_r == IMAGE_WIDTH_HEIGHT - 1));
+wire L1_imgRightBoundReach_Flag = STATE_L1_K1_MAXPOOLING_WB ? (imgRowPTR_rd == IMAGE_WIDTH_HEIGHT - 1) :'d0;
+wire L1_DoneFlag = ((imgRowPTR_rd == IMAGE_WIDTH_HEIGHT-1) && (imgColPTR_rd == IMAGE_WIDTH_HEIGHT - 1));
 
 //Needs 1 cnt only uses sharedCnt
 wire L2_K0_flatten_DoneFlag = (sharedCnt == MP_IMG_RD_DONE);
@@ -201,22 +201,35 @@ always @(posedge clk or posedge reset)
 begin
     if(reset)
     begin
-        sharedCnt <= reset ? 'd0 : sharedCnt_w;
+        sharedCnt <= 'd0;
+    end
+    else
+    begin
+        case(mainCTR_current_state)
+            L0_ZEROPAD_CONV:
+            begin
+                sharedCnt <= ~ready ? sharedCnt + 'd1 : sharedCnt;
+            end
+            L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX:
+            begin
+                sharedCnt <= sharedCnt + 'd1;
+            end
+            default:
+            begin
+                sharedCnt <= 'd0;
+            end
+        endcase
     end
 end
 
-wire sharedCnt_w = (L0_LocalZeroPadConv_DoneFlag
-                    || L1_K0_MaxPoolingCompare_DoneFlag || L1_K1_MaxPoolingCompare_DoneFlag || L2_K0_flatten_DoneFlag ||
-                    L2_K1_flatten_DoneFlag) ? 'd0 : (sharedCnt + 'd1);
-
 //IMG_PTR
-reg[6:0] imgColPTR_w;
-reg[6:0] imgRowPTR_w;
+reg[PTR_LENGTH-1:0] imgColPTR_wr;
+reg[PTR_LENGTH-1:0] imgRowPTR_wr;
 
 always @(posedge clk or posedge reset)
 begin
-    imgColPTR_r <= reset || L1_DoneFlag ? 'd1 : L0_DoneFlag ?  'd0 : imgColPTR_w;
-    imgRowPTR_r <= reset || L1_DoneFlag ? 'd1 : L0_DoneFlag ?  'd0 : imgRowPTR_w;
+    imgColPTR_rd <= reset || L1_DoneFlag ? 'd1 : L0_DoneFlag ?  'd0 : imgColPTR_wr;
+    imgRowPTR_rd <= reset || L1_DoneFlag ? 'd1 : L0_DoneFlag ?  'd0 : imgRowPTR_wr;
 end
 
 always @(*)
@@ -224,24 +237,23 @@ begin
     case(mainCTR_current_state)
         L0_K1_BIAS_RELU:
         begin
-            imgColPTR_w  = L0_imgRightBoundReach_Flag ? 'd1 : imgColPTR_r + 'd1;
-            imgRowPTR_w  = L0_imgRightBoundReach_Flag ? (imgRowPTR_r + 'd1) : imgRowPTR_r;
+            imgColPTR_wr  = L0_imgRightBoundReach_Flag ? 'd1 : imgColPTR_rd + 'd1;
+            imgRowPTR_wr  = L0_imgRightBoundReach_Flag ? (imgRowPTR_rd + 'd1) : imgRowPTR_rd;
         end
         L1_K1_MAXPOOLING_WB:
         begin
-            imgColPTR_w  = L1_imgRightBoundReach_Flag ? 'd0 : imgColPTR_r + 'd1;
-            imgRowPTR_w  = L1_imgRightBoundReach_Flag ? (imgRowPTR_r + 'd1) : imgRowPTR_r;
+            imgColPTR_wr  = L1_imgRightBoundReach_Flag ? 'd0 : imgColPTR_rd + 'd1;
+            imgRowPTR_wr  = L1_imgRightBoundReach_Flag ? (imgRowPTR_rd + 'd1) : imgRowPTR_rd;
         end
         default:
         begin
-            imgColPTR_w  = imgColPTR_r;
-            imgRowPTR_w  = imgRowPTR_r;
+            imgColPTR_wr  = imgColPTR_rd;
+            imgRowPTR_wr  = imgRowPTR_rd;
         end
     endcase
 end
 
-wire[11:0] addrZeroPad =  (imgColPTR_r - 'd1) + (imgRowPTR_r - 'd1) * IMAGE_WIDTH_HEIGHT;
-wire[11:0] addrMaxPooling = imgColPTR_r + imgRowPTR_r * IMAGE_WIDTH_HEIGHT;
+wire[11:0] maxPoolingWriteAddr = imgColPTR_rd + imgRowPTR_rd * IMAGE_WIDTH_HEIGHT;
 
 parameter NO_ACCESS= 3'b000;
 parameter L0_MEM0_ACCESS= 3'b001;
@@ -250,36 +262,9 @@ parameter L1_MEM0_ACCESS= 3'b011;
 parameter L1_MEM1_ACCESS= 3'b100;
 parameter L2_MEM_ACCESS= 3'b101;
 
-reg[19:0] maxPooling_result_r;
-reg[19:0] flattenTemp_r;
+reg[19:0] maxPooling_result_rd;
+reg[19:0] flattenTemp_rd;
 reg[19:0] flattenWriteAddr;
-
-//Read write bus control
-always @(*)
-begin
-    case(mainCTR_current_state)
-        L0_K0_WB,L0_K1_WB:
-        begin
-            cdata_wr = STATE_L0_K0_BIAS_RELU ? conv_K0_Result_r : conv_K1_Result_r;
-            caddr_wr = addrZeroPad;
-        end
-        L1_K1_MAXPOOLING_WB,L1_K0_MAXPOOLING_WB:
-        begin
-            cdata_wr = maxPooling_result_r;
-            caddr_wr = addrMaxPooling;
-        end
-        L2_K0_WB,L2_K1_WB:
-        begin
-            cdata_wr = flattenTemp_r;
-            caddr_wr = flattenWriteAddr;
-        end
-        default:
-        begin
-            cdata_wr = 'd0;
-            caddr_wr = 'd0;
-        end
-    endcase
-end
 
 //Memory access csel,crd,cwr
 always @(*)
@@ -300,6 +285,7 @@ begin
         L1_K1_MAXPOOLING_WB,L2_K1_RD:
         begin
             csel = L1_MEM1_ACCESS;
+
         end
         L2_K0_WB,L2_K1_WB:
         begin
@@ -331,90 +317,98 @@ begin
 end
 
 //Busy
-assign busy = ((~STATE_DONE) ^ (~reset) ) ? 1 : 0 ;
+always @(*)
+begin
+    if(reset)
+    begin
+        busy = 0;
+    end
+    else if(STATE_DONE)
+    begin
+        busy = 0;
+    end
+    else
+    begin
+        busy = 1;
+    end
+end
 
 //------------------------------------DATAPATH--------------------------------//
-reg signed[DATA_WIDTH-1:0] sharedReg1_r;
-reg signed[DATA_WIDTH-1:0] sharedReg2_r;
+//When sharing components, first declare the components you want to share
+//Second, Declare the input wr and output rd of the components
+//Lastly declare the varaiable as wires you instantiate the components then connect them together
+//2 registers needed
+reg signed[DATA_WIDTH-1:0] sharedReg1_rd;
+reg signed[DATA_WIDTH-1:0] sharedReg2_rd;
 reg signed[DATA_WIDTH-1:0] sharedReg1_wr;
 reg signed[DATA_WIDTH-1:0] sharedReg2_wr;
+reg sharedReg1Ld;
+reg sharedReg2Ld;
 
-wire signed[DATA_WIDTH-1:0] K0_convResult;
-wire signed[DATA_WIDTH-1:0] K1_convResult;
+//Ld control for registers
+always @(*)
+begin
+    case(mainCTR_current_state)
+        L0_ZEROPAD_CONV:
+        begin
+            {sharedReg1Ld,sharedReg2Ld} = 2'b11;
+        end
+        L0_K0_BIAS_RELU,L0_K1_BIAS_RELU,L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX,L2_K0_RD,L2_K1_RD:
+        begin
+            {sharedReg1Ld,sharedReg2Ld} = 2'b10;
+        end
+        default:
+        begin
+            {sharedReg1Ld,sharedReg2Ld} = 2'b00;
+        end
+    endcase
+end
 
-//2 Multipliers for ZeroPadConv, uses input2 as kernal value input
-wire signed[DATA_WIDTH*2 - 1 : 0] serialMultiplier1_o = multiplier1_Input1 * multiplier2_Input2;
-wire signed[DATA_WIDTH*2 - 1 : 0] serialMultiplier2_o = multiplier2_Input1 * multiplier2_Input2;
-
-wire signed[DATA_WIDTH - 1 : 0] multiplier1_Input1;
-reg signed[DATA_WIDTH - 1 : 0]  multiplier1_Input2;
-wire signed[DATA_WIDTH - 1 : 0] multiplier2_Input1;
-reg signed[DATA_WIDTH - 1 : 0]  multiplier2_Input2;
-
-//1 signed adder for BIAS_ReLU
-wire signed[DATA_WIDTH-1:0] signedAdder_o = signedAdder_Input1 + BIAS;
-wire signed[DATA_WIDTH-1:0] signedAdder_Input1;
-
-assign signedAdder_Input1 = STATE_L0_K0_BIAS_RELU ? conv_K0_Result_r : conv_K1_Result_r;
-
-//L0 Conv_result
-reg[DATA_WIDTH-1:0] conv_K0_Result_r;
-reg[DATA_WIDTH-1:0] conv_K1_Result_r;
-
-//1 Comparator for BIAS_ReLU & Maxpooling
-wire signed compare_gt = comparatorInput1 > comparatorInput2 ;
-reg[DATA_WIDTH-1:0] comparatorInput1;
-reg[DATA_WIDTH-1:0] comparatorInput2;
-
-wire compare_gt_zero = STATE_L0_K0_BIAS_RELU || STATE_L0_K1_BIAS_RELU ? 'd0 : compare_gt;
-wire compare_gt_tempMax = STATE_L1_K0_MAXPOOLING_COMPARE_MAX || STATE_L1_K1_MAXPOOLING_COMPARE_MAX ? 'd0 : compare_gt;
-
-//MaxPooling
-reg[DATA_WIDTH-1:0] tempMax_r;
-
-//sharedReg1_r,sharedReg2_r
 always @(posedge clk or posedge reset)
 begin
-    sharedReg1_r <= reset ? 'd0 : sharedReg1_wr;
-    sharedReg2_r <= reset ? 'd0 : sharedReg2_wr;
+    sharedReg1_rd <= reset ? 'd0 : sharedReg1Ld ? sharedReg1_wr : sharedReg1_rd;
+    sharedReg2_rd <= reset ? 'd0 : sharedReg2Ld ? sharedReg2_wr : sharedReg2_rd;
 end
 
-//sharedReg1_wr
-always @(*)
-begin
-    case(mainCTR_current_state)
-        L0_ZEROPAD_CONV:
-            //Serial multiplier
-        begin
-            sharedReg1_wr = serialMultiplier1_o + sharedReg1_r;
-        end
-        L0_K0_BIAS_RELU:
-        begin
-            sharedReg1_wr = compare_gt_zero ? signedAdder_o : 'd0;
-        end
-        default:
-        begin
-            sharedReg1_wr = sharedReg1_r;
-        end
-    endcase
-end
+//2 Multipliers for ZeroPadConv, uses input2 as kernal value input
+wire signed[DATA_WIDTH*2 - 1 : 0] serialMultiplier1_o = multiplier1_input1 * multiplier1_input2;
+wire signed[DATA_WIDTH*2 - 1 : 0] serialMultiplier2_o = multiplier2_input1 * multiplier2_input2;
 
-//sharedReg2_wr
-always @(*)
-begin
-    case(mainCTR_current_state)
-        L0_ZEROPAD_CONV:
-        begin
-            sharedReg2_wr = serialMultiplier2_o + sharedReg2_r;
-        end
-        default:
-        begin
-            sharedReg2_wr = sharedReg2_r;
-        end
-    endcase
-end
+reg signed[DATA_WIDTH - 1 : 0] multiplier1_input1;
+wire signed[DATA_WIDTH - 1 : 0]  multiplier1_input2;
 
-//Multipler2 Inputs
+reg signed[DATA_WIDTH - 1 : 0] multiplier2_input1;
+wire signed[DATA_WIDTH - 1 : 0]  multiplier2_input2;
+
+//1 signed adder for BIAS_ReLU
+wire signed[DATA_WIDTH-1:0] signedAdder_o = signedAdder_input1 + BIAS;
+reg signed[DATA_WIDTH-1:0] signedAdder_input1;
+
+
+
+//1 Comparator for BIAS_ReLU & Maxpooling
+wire compare_gt = comparatorInput1 > comparatorInput2 ;
+reg signed[DATA_WIDTH-1:0] comparatorInput1;
+reg signed[DATA_WIDTH-1:0] comparatorInput2;
+
+//L0
+//L0 K0 K1 ZeroPadConv
+wire[DATA_WIDTH-1:0] conv_K0_Result_wr;
+wire[DATA_WIDTH-1:0] conv_K1_Result_wr;
+wire[DATA_WIDTH-1:0] conv_K0_Result_rd;
+wire[DATA_WIDTH-1:0] conv_K1_Result_rd;
+
+reg[PTR_LENGTH-1:0] offsetColPTR;
+reg[PTR_LENGTH-1:0] offsetRowPTR;
+
+wire zeroPad = offsetColPTR == 'd0 || offsetColPTR == 'd65 || offsetRowPTR == 'd0 || offsetRowPTR == 'd65 ;
+
+wire[11:0] zeroPadWriteAddr =  (imgColPTR_rd - 'd1) + (imgRowPTR_rd - 'd1) * IMAGE_WIDTH_HEIGHT;
+wire[11:0] zeroPadReadAddr  = zeroPad ? 'd0 : (offsetColPTR - 'd1) + (offsetRowPTR - 'd1) * IMAGE_WIDTH_HEIGHT;
+
+assign iaddr = STATE_L0_ZEROPAD_CONV ? zeroPadReadAddr : 'dz;
+
+wire[DATA_WIDTH-1:0] conv_pixel = zeroPad ? 'd0 : idata;
 always @(*)
 begin
     if(STATE_L0_ZEROPAD_CONV)
@@ -422,93 +416,315 @@ begin
         case(sharedCnt)
             'd0:
             begin
-                multiplier1_Input2 = KERNAL0_00;
-                multiplier2_Input2 = KERNAL1_00;
+                offsetColPTR = (imgColPTR_rd - 'd1);
+                offsetRowPTR = (imgRowPTR_rd - 'd1);
             end
             'd1:
             begin
-                multiplier1_Input2 = KERNAL0_01;
-                multiplier2_Input2 = KERNAL1_01;
+                offsetColPTR = (imgColPTR_rd);
+                offsetRowPTR = (imgRowPTR_rd - 'd1);
             end
             'd2:
             begin
-                multiplier1_Input2 = KERNAL0_02;
-                multiplier2_Input2 = KERNAL1_02;
+                offsetColPTR = imgColPTR_rd + 'd1;
+                offsetRowPTR = imgRowPTR_rd - 'd1;
             end
             'd3:
             begin
-                multiplier1_Input2 = KERNAL0_10;
-                multiplier2_Input2 = KERNAL1_10;
+                offsetColPTR = imgColPTR_rd - 'd1;
+                offsetRowPTR = imgRowPTR_rd ;
             end
             'd4:
             begin
-                multiplier1_Input2 = KERNAL0_11;
-                multiplier2_Input2 = KERNAL1_11;
+                offsetColPTR = imgColPTR_rd;
+                offsetRowPTR = imgRowPTR_rd;
             end
             'd5:
             begin
-                multiplier1_Input2 = KERNAL0_12;
-                multiplier2_Input2 = KERNAL1_12;
+                offsetColPTR = imgColPTR_rd + 'd1;
+                offsetRowPTR = imgRowPTR_rd;
             end
             'd6:
             begin
-                multiplier1_Input2 = KERNAL0_20;
-                multiplier2_Input2 = KERNAL1_20;
+                offsetColPTR = imgColPTR_rd - 'd1;
+                offsetRowPTR = imgRowPTR_rd + 'd1;
             end
             'd7:
             begin
-                multiplier1_Input2 = KERNAL0_21;
-                multiplier2_Input2 = KERNAL1_21;
+                offsetColPTR = imgColPTR_rd;
+                offsetRowPTR = imgRowPTR_rd + 'd1;
             end
             'd8:
             begin
-                multiplier1_Input2 = KERNAL0_22;
-                multiplier2_Input2 = KERNAL1_22;
+                offsetColPTR = imgColPTR_rd + 'd1;
+                offsetRowPTR = imgRowPTR_rd + 'd1;
             end
             default:
             begin
-                multiplier1_Input2 = 'd10;
-                multiplier2_Input2 = 'd10;
+                offsetColPTR = imgColPTR_rd;
+                offsetRowPTR = imgRowPTR_rd;
+            end
+        endcase
+    end
+    else if(STATE_L1_K0_MAXPOOLING_COMPARE_MAX || STATE_L1_K1_MAXPOOLING_COMPARE_MAX)
+    begin
+        case(sharedCnt)
+            'd0:
+            begin
+                offsetColPTR = imgColPTR_rd;
+                offsetRowPTR = imgRowPTR_rd;
+            end
+            'd1:
+            begin
+                offsetColPTR = (imgColPTR_rd + 'd1);
+                offsetRowPTR = imgRowPTR_rd;
+            end
+            'd2:
+            begin
+                offsetColPTR = imgColPTR_rd;
+                offsetRowPTR = imgRowPTR_rd + 'd1;
+            end
+            'd3:
+            begin
+                offsetColPTR = imgColPTR_rd + 'd1;
+                offsetRowPTR = imgRowPTR_rd + 'd1;
+            end
+            default:
+            begin
+                offsetColPTR = imgColPTR_rd;
+                offsetRowPTR = imgRowPTR_rd;
             end
         endcase
     end
     else
     begin
-        multiplier1_Input2 = 'd0;
-        multiplier2_Input2 = 'd0;
+        offsetColPTR = imgColPTR_rd;
+        offsetRowPTR = imgRowPTR_rd;
     end
 end
 
-assign multiplier1_Input1 = STATE_L0_ZEROPAD_CONV ? idata : 'd0;
-assign multiplier2_Input1 = STATE_L0_ZEROPAD_CONV ? idata : 'd0;
 
-parameter ZERO = 0;
-//comparator Inputs
+
 always @(*)
 begin
-    case(mainCTR_current_state)
-        L0_K0_BIAS_RELU,L0_K1_BIAS_RELU:
-        begin
-            comparatorInput1 = STATE_L0_K0_BIAS_RELU ? conv_K0_Result_r : conv_K1_Result_r;
-            comparatorInput2 = ZERO;
-        end
-        L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX:
-        begin
-            comparatorInput1 = cdata_rd;
-            comparatorInput2 = tempMax_r;
-        end
-        default:
-        begin
-            comparatorInput1 = 1;
-            comparatorInput2 = 0;
-        end
-    endcase
+    if(STATE_L0_ZEROPAD_CONV)
+    begin
+        sharedReg1_wr = conv_K0_Result_wr;
+        sharedReg2_wr = conv_K1_Result_wr;
+    end
+    else
+    begin
+        sharedReg1_wr = 'dz;
+        sharedReg2_wr = 'dz;
+    end
 end
 
-//Convolution results
-assign K0_convResult   =  STATE_L0_ZEROPAD_CONV || STATE_L0_K0_BIAS_RELU ? sharedReg1_r :'d0;
-assign K1_convResult   =  STATE_L0_ZEROPAD_CONV || STATE_L0_K1_BIAS_RELU ? sharedReg2_r :'d0;
+//Giving KERNAL VALUES to multipliers
+always @(*)
+begin
+    if(STATE_L0_ZEROPAD_CONV)
+    begin
+        case(sharedCnt)
+            'd0:
+            begin
+                multiplier1_input1 = KERNAL0_00;
+                multiplier2_input1 = KERNAL1_00;
+            end
+            'd1:
+            begin
+                multiplier1_input1 = KERNAL0_01;
+                multiplier2_input1 = KERNAL1_01;
+            end
 
+            'd2:
+            begin
+                multiplier1_input1 = KERNAL0_02;
+                multiplier2_input1 = KERNAL1_02;
+            end
 
+            'd3:
+            begin
+                multiplier1_input1 = KERNAL0_10;
+                multiplier2_input1 = KERNAL1_10;
+            end
+
+            'd4:
+            begin
+                multiplier1_input1 = KERNAL0_11;
+                multiplier2_input1 = KERNAL1_11;
+            end
+
+            'd5:
+            begin
+                multiplier1_input1 = KERNAL0_12;
+                multiplier2_input1 = KERNAL1_12;
+            end
+
+            'd6:
+            begin
+                multiplier1_input1 = KERNAL0_20;
+                multiplier2_input1 = KERNAL1_20;
+            end
+
+            'd7:
+            begin
+                multiplier1_input1 = KERNAL0_21;
+                multiplier2_input1 = KERNAL1_21;
+            end
+
+            'd8:
+            begin
+                multiplier1_input1 = KERNAL0_22;
+                multiplier2_input1 = KERNAL1_22;
+            end
+            default:
+            begin
+                multiplier1_input1 = 'd0;
+                multiplier2_input1 = 'd0;
+            end
+        endcase
+    end
+    else
+    begin
+        multiplier1_input1 = 'd0;
+        multiplier2_input1 = 'd0;
+    end
+end
+
+assign multiplier1_input2 = STATE_L0_ZEROPAD_CONV ? conv_pixel  : 'd0;
+assign multiplier2_input2 = STATE_L0_ZEROPAD_CONV ? conv_pixel :  'd0;
+
+assign conv_K0_Result_wr = STATE_L0_ZEROPAD_CONV ?  serialMultiplier1_o[34:15] + conv_K0_Result_rd : 'dz;
+assign conv_K1_Result_wr = STATE_L0_ZEROPAD_CONV ?  serialMultiplier2_o[34:15] + conv_K1_Result_rd : 'dz;
+
+assign conv_K0_Result_rd = sharedReg1_rd;
+assign conv_K1_Result_rd = sharedReg2_rd;
+
+//K0 K1 BiaS ReLU
+wire[DATA_WIDTH-1:0] ReLU_result_wr;
+wire compare_gt_ZERO = compare_gt;
+wire[DATA_WIDTH-1:0] biased_result = signedAdder_o;
+
+parameter ZERO = 'd0;
+always @(*)
+begin
+    if(STATE_L0_K0_BIAS_RELU)
+    begin
+        signedAdder_input1 = conv_K0_Result_rd;
+    end
+    else if(STATE_L0_K1_BIAS_RELU)
+    begin
+        signedAdder_input1 = conv_K1_Result_rd;
+    end
+    else
+    begin
+        signedAdder_input1 = 'd0;
+    end
+end
+
+always @(*)
+begin
+    if(STATE_L0_K0_BIAS_RELU || STATE_L0_K1_BIAS_RELU)
+    begin
+        comparatorInput1 = signedAdder_o;
+        comparatorInput2 = ZERO;
+    end
+    else
+    begin
+        comparatorInput1 = 'dz;
+        comparatorInput2 = 'dz;
+    end
+end
+
+assign ReLU_result_wr = compare_gt_ZERO ? signedAdder_o : 'd0;
+
+always @(*)
+begin
+    if(STATE_L0_K0_BIAS_RELU||STATE_L0_K1_BIAS_RELU)
+    begin
+        sharedReg1_wr = ReLU_result_wr;
+    end
+    else
+    begin
+        sharedReg1_wr = 'dz;
+    end
+end
+
+//K0 K1 WB
+wire[DATA_WIDTH-1:0] L0_Result_rd = STATE_L0_K0_WB ? conv_K0_Result_rd : (STATE_L0_K1_WB ? conv_K1_Result_rd : 'd0);
+
+always @(*)
+begin
+    if(STATE_L0_K0_WB||STATE_L0_K1_WB)
+    begin
+        cdata_wr = L0_Result_rd;
+        caddr_wr = zeroPadWriteAddr;
+    end
+    else
+    begin
+        cdata_wr = 'd0;
+        caddr_wr = 'dz;
+    end
+end
+
+//L1
+//K0 K1 MP
+wire[DATA_WIDTH-1:0] tempMax_rd = sharedReg1_rd;
+
+always @(*)
+begin
+    if(STATE_L1_K0_MAXPOOLING_COMPARE_MAX || STATE_L1_K1_MAXPOOLING_COMPARE_MAX)
+    begin
+        comparatorInput1    = cdata_rd;
+        comparatorInput2    = tempMax_rd;
+    end
+    else
+    begin
+        comparatorInput1    = 'dz;
+        comparatorInput2    = 'dz;
+    end
+end
+
+wire[DATA_WIDTH-1:0] tempMax_wr = compare_gt ? cdata_rd : tempMax_rd;
+
+always @(*)
+begin
+    if(STATE_L1_K0_MAXPOOLING_COMPARE_MAX || STATE_L1_K1_MAXPOOLING_COMPARE_MAX)
+    begin
+        sharedReg1_wr = tempMax_wr;
+    end
+    else
+    begin
+        sharedReg1_wr = 'dz;
+    end
+end
+
+//L2
+//K0,K1 RD WB
+wire[DATA_WIDTH-1:0] K0_K1_temp_rd = sharedReg1_rd;
+
+always @(*)
+begin
+    if(STATE_L2_K0_RD || STATE_L2_K1_RD)
+    begin
+        sharedReg1_wr = cdata_rd;
+    end
+    else
+    begin
+        sharedReg1_wr = 'dz;
+    end
+end
+
+always @(*)
+begin
+    if(STATE_L2_K0_WB || STATE_L2_K1_WB)
+    begin
+        cdata_wr = K0_K1_temp_rd;
+    end
+    else
+    begin
+        cdata_wr = 'dz;
+    end
+end
 
 endmodule
