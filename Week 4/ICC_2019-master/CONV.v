@@ -662,7 +662,7 @@ begin
     end
     else
     begin
-        cdata_wr = 'd0;
+        cdata_wr = 'dz;
         caddr_wr = 'dz;
     end
 end
