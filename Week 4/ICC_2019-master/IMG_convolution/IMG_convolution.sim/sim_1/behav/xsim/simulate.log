@@ -1,0 +1,21 @@
+Time resolution is 1 ps
+-----------------------------------------------------
+
+START!!! Simulation Start .....
+
+-----------------------------------------------------
+
+ 
+-----------------------------------------------------
+
+--------------------- S U M M A R Y -----------------
+
+Layer 0 output was fail! 
+
+Layer 1 output was fail! 
+
+FAIL!!! No output data was found!! 
+
+-----------------------------------------------------
+
+$finish called at time : 16 ns : File "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week 4/ICC_2019-master/testfixture.v" Line 191

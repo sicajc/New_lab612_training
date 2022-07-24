@@ -11,15 +11,21 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="299.801 ns"></ZoomEndTime>
-      <Cursor1Time time="143.600 ns"></Cursor1Time>
+      <ZoomStartTime time="33,755,430.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="33,755,706.001 ns"></ZoomEndTime>
+      <Cursor1Time time="33,755,660.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="295"></NameColumnWidth>
-      <ValueColumnWidth column_width="222"></ValueColumnWidth>
+      <NameColumnWidth column_width="427"></NameColumnWidth>
+      <ValueColumnWidth column_width="209"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="22" />
+   <wave_markers>
+      <marker time="1047845000" label="" />
+      <marker time="532515000" label="" />
+      <marker time="532615000" label="" />
+      <marker time="3706914000" label="" />
+   </wave_markers>
    <wvobject fp_name="/testfixture/u_CONV/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -58,7 +64,7 @@
    <wvobject fp_name="/testfixture/u_CONV/cdata_wr" type="array">
       <obj_property name="ElementShortName">cdata_wr[19:0]</obj_property>
       <obj_property name="ObjectShortName">cdata_wr[19:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/testfixture/u_CONV/crd" type="logic">
       <obj_property name="ElementShortName">crd</obj_property>
@@ -110,6 +116,7 @@
       <wvobject fp_name="group164" type="group">
          <obj_property name="label">Flags</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/testfixture/u_CONV/L0_LocalZeroPadConv_DoneFlag" type="logic">
             <obj_property name="ElementShortName">L0_LocalZeroPadConv_DoneFlag</obj_property>
             <obj_property name="ObjectShortName">L0_LocalZeroPadConv_DoneFlag</obj_property>
@@ -126,35 +133,26 @@
       <wvobject fp_name="group166" type="group">
          <obj_property name="label">PTR</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <wvobject fp_name="/testfixture/u_CONV/imgColPTR_wr" type="array">
-            <obj_property name="ElementShortName">imgColPTR_wr[6:0]</obj_property>
-            <obj_property name="ObjectShortName">imgColPTR_wr[6:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/testfixture/u_CONV/imgRowPTR_wr" type="array">
-            <obj_property name="ElementShortName">imgRowPTR_wr[6:0]</obj_property>
-            <obj_property name="ObjectShortName">imgRowPTR_wr[6:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/testfixture/u_CONV/imgColPTR_rd" type="array">
-            <obj_property name="ElementShortName">imgColPTR_rd[6:0]</obj_property>
-            <obj_property name="ObjectShortName">imgColPTR_rd[6:0]</obj_property>
+            <obj_property name="ElementShortName">imgColPTR_rd[7:0]</obj_property>
+            <obj_property name="ObjectShortName">imgColPTR_rd[7:0]</obj_property>
             <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/testfixture/u_CONV/imgRowPTR_rd" type="array">
-            <obj_property name="ElementShortName">imgRowPTR_rd[6:0]</obj_property>
-            <obj_property name="ObjectShortName">imgRowPTR_rd[6:0]</obj_property>
+            <obj_property name="ElementShortName">imgRowPTR_rd[7:0]</obj_property>
+            <obj_property name="ObjectShortName">imgRowPTR_rd[7:0]</obj_property>
             <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/testfixture/u_CONV/offsetColPTR" type="array">
-            <obj_property name="ElementShortName">offsetColPTR[6:0]</obj_property>
-            <obj_property name="ObjectShortName">offsetColPTR[6:0]</obj_property>
-            <obj_property name="Radix">HEXRADIX</obj_property>
+            <obj_property name="ElementShortName">offsetColPTR[7:0]</obj_property>
+            <obj_property name="ObjectShortName">offsetColPTR[7:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/testfixture/u_CONV/offsetRowPTR" type="array">
-            <obj_property name="ElementShortName">offsetRowPTR[6:0]</obj_property>
-            <obj_property name="ObjectShortName">offsetRowPTR[6:0]</obj_property>
-            <obj_property name="Radix">HEXRADIX</obj_property>
+            <obj_property name="ElementShortName">offsetRowPTR[7:0]</obj_property>
+            <obj_property name="ObjectShortName">offsetRowPTR[7:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
       </wvobject>
       <wvobject fp_name="group165" type="group">
@@ -163,32 +161,32 @@
          <wvobject fp_name="/testfixture/u_CONV/serialMultiplier1_o" type="array">
             <obj_property name="ElementShortName">serialMultiplier1_o[39:0]</obj_property>
             <obj_property name="ObjectShortName">serialMultiplier1_o[39:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/testfixture/u_CONV/serialMultiplier2_o" type="array">
             <obj_property name="ElementShortName">serialMultiplier2_o[39:0]</obj_property>
             <obj_property name="ObjectShortName">serialMultiplier2_o[39:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/testfixture/u_CONV/multiplier1_input1" type="array">
             <obj_property name="ElementShortName">multiplier1_input1[19:0]</obj_property>
             <obj_property name="ObjectShortName">multiplier1_input1[19:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/testfixture/u_CONV/multiplier1_input2" type="array">
             <obj_property name="ElementShortName">multiplier1_input2[19:0]</obj_property>
             <obj_property name="ObjectShortName">multiplier1_input2[19:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/testfixture/u_CONV/multiplier2_input1" type="array">
             <obj_property name="ElementShortName">multiplier2_input1[19:0]</obj_property>
             <obj_property name="ObjectShortName">multiplier2_input1[19:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/testfixture/u_CONV/multiplier2_input2" type="array">
             <obj_property name="ElementShortName">multiplier2_input2[19:0]</obj_property>
             <obj_property name="ObjectShortName">multiplier2_input2[19:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
          </wvobject>
       </wvobject>
       <wvobject fp_name="group167" type="group">
@@ -230,6 +228,7 @@
       <wvobject fp_name="group169" type="group">
          <obj_property name="label">ZeroPad_CONV</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/testfixture/u_CONV/conv_K0_Result_wr" type="array">
             <obj_property name="ElementShortName">conv_K0_Result_wr[19:0]</obj_property>
             <obj_property name="ObjectShortName">conv_K0_Result_wr[19:0]</obj_property>
@@ -298,41 +297,52 @@
    <wvobject fp_name="group157" type="group">
       <obj_property name="label">L1</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/testfixture/u_CONV/STATE_L1_K0_MAXPOOLING_COMPARE_MAX" type="logic">
-         <obj_property name="ElementShortName">STATE_L1_K0_MAXPOOLING_COMPARE_MAX</obj_property>
-         <obj_property name="ObjectShortName">STATE_L1_K0_MAXPOOLING_COMPARE_MAX</obj_property>
+      <wvobject fp_name="group274" type="group">
+         <obj_property name="label">States</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/testfixture/u_CONV/STATE_L1_K0_MAXPOOLING_COMPARE_MAX" type="logic">
+            <obj_property name="ElementShortName">STATE_L1_K0_MAXPOOLING_COMPARE_MAX</obj_property>
+            <obj_property name="ObjectShortName">STATE_L1_K0_MAXPOOLING_COMPARE_MAX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/STATE_L1_K0_MAXPOOLING_WB" type="logic">
+            <obj_property name="ElementShortName">STATE_L1_K0_MAXPOOLING_WB</obj_property>
+            <obj_property name="ObjectShortName">STATE_L1_K0_MAXPOOLING_WB</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/STATE_L1_K1_MAXPOOLING_COMPARE_MAX" type="logic">
+            <obj_property name="ElementShortName">STATE_L1_K1_MAXPOOLING_COMPARE_MAX</obj_property>
+            <obj_property name="ObjectShortName">STATE_L1_K1_MAXPOOLING_COMPARE_MAX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/STATE_L1_K1_MAXPOOLING_WB" type="logic">
+            <obj_property name="ElementShortName">STATE_L1_K1_MAXPOOLING_WB</obj_property>
+            <obj_property name="ObjectShortName">STATE_L1_K1_MAXPOOLING_WB</obj_property>
+         </wvobject>
       </wvobject>
-      <wvobject fp_name="/testfixture/u_CONV/STATE_L1_K1_MAXPOOLING_COMPARE_MAX" type="logic">
-         <obj_property name="ElementShortName">STATE_L1_K1_MAXPOOLING_COMPARE_MAX</obj_property>
-         <obj_property name="ObjectShortName">STATE_L1_K1_MAXPOOLING_COMPARE_MAX</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testfixture/u_CONV/STATE_L1_K0_MAXPOOLING_WB" type="logic">
-         <obj_property name="ElementShortName">STATE_L1_K0_MAXPOOLING_WB</obj_property>
-         <obj_property name="ObjectShortName">STATE_L1_K0_MAXPOOLING_WB</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testfixture/u_CONV/STATE_L1_K1_MAXPOOLING_WB" type="logic">
-         <obj_property name="ElementShortName">STATE_L1_K1_MAXPOOLING_WB</obj_property>
-         <obj_property name="ObjectShortName">STATE_L1_K1_MAXPOOLING_WB</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testfixture/u_CONV/L1_K0_MaxPoolingCompare_DoneFlag" type="logic">
-         <obj_property name="ElementShortName">L1_K0_MaxPoolingCompare_DoneFlag</obj_property>
-         <obj_property name="ObjectShortName">L1_K0_MaxPoolingCompare_DoneFlag</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testfixture/u_CONV/L1_K1_MaxPoolingCompare_DoneFlag" type="logic">
-         <obj_property name="ElementShortName">L1_K1_MaxPoolingCompare_DoneFlag</obj_property>
-         <obj_property name="ObjectShortName">L1_K1_MaxPoolingCompare_DoneFlag</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testfixture/u_CONV/L1_imgRightBoundReach_Flag" type="logic">
-         <obj_property name="ElementShortName">L1_imgRightBoundReach_Flag</obj_property>
-         <obj_property name="ObjectShortName">L1_imgRightBoundReach_Flag</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testfixture/u_CONV/L1_DoneFlag" type="logic">
-         <obj_property name="ElementShortName">L1_DoneFlag</obj_property>
-         <obj_property name="ObjectShortName">L1_DoneFlag</obj_property>
+      <wvobject fp_name="group275" type="group">
+         <obj_property name="label">Flags</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/testfixture/u_CONV/L1_K0_MaxPoolingCompare_DoneFlag" type="logic">
+            <obj_property name="ElementShortName">L1_K0_MaxPoolingCompare_DoneFlag</obj_property>
+            <obj_property name="ObjectShortName">L1_K0_MaxPoolingCompare_DoneFlag</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/L1_K1_MaxPoolingCompare_DoneFlag" type="logic">
+            <obj_property name="ElementShortName">L1_K1_MaxPoolingCompare_DoneFlag</obj_property>
+            <obj_property name="ObjectShortName">L1_K1_MaxPoolingCompare_DoneFlag</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/L1_imgRightBoundReach_Flag" type="logic">
+            <obj_property name="ElementShortName">L1_imgRightBoundReach_Flag</obj_property>
+            <obj_property name="ObjectShortName">L1_imgRightBoundReach_Flag</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/L1_DoneFlag" type="logic">
+            <obj_property name="ElementShortName">L1_DoneFlag</obj_property>
+            <obj_property name="ObjectShortName">L1_DoneFlag</obj_property>
+         </wvobject>
       </wvobject>
       <wvobject fp_name="/testfixture/u_CONV/maxPoolingWriteAddr" type="array">
          <obj_property name="ElementShortName">maxPoolingWriteAddr[11:0]</obj_property>
          <obj_property name="ObjectShortName">maxPoolingWriteAddr[11:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testfixture/u_CONV/maxPooling_result_rd" type="array">
          <obj_property name="ElementShortName">maxPooling_result_rd[19:0]</obj_property>
@@ -341,30 +351,79 @@
       <wvobject fp_name="/testfixture/u_CONV/tempMax_rd" type="array">
          <obj_property name="ElementShortName">tempMax_rd[19:0]</obj_property>
          <obj_property name="ObjectShortName">tempMax_rd[19:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testfixture/u_CONV/tempMax_wr" type="array">
          <obj_property name="ElementShortName">tempMax_wr[19:0]</obj_property>
          <obj_property name="ObjectShortName">tempMax_wr[19:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testfixture/u_CONV/sharedCnt" type="array">
          <obj_property name="ElementShortName">sharedCnt[10:0]</obj_property>
          <obj_property name="ObjectShortName">sharedCnt[10:0]</obj_property>
       </wvobject>
+      <wvobject fp_name="group168" type="group">
+         <obj_property name="label">comparator</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="/testfixture/u_CONV/compare_gt" type="logic">
+            <obj_property name="ElementShortName">compare_gt</obj_property>
+            <obj_property name="ObjectShortName">compare_gt</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/comparatorInput1" type="array">
+            <obj_property name="ElementShortName">comparatorInput1[19:0]</obj_property>
+            <obj_property name="ObjectShortName">comparatorInput1[19:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/comparatorInput2" type="array">
+            <obj_property name="ElementShortName">comparatorInput2[19:0]</obj_property>
+            <obj_property name="ObjectShortName">comparatorInput2[19:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/compare_gt_ZERO" type="logic">
+            <obj_property name="ElementShortName">compare_gt_ZERO</obj_property>
+            <obj_property name="ObjectShortName">compare_gt_ZERO</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group166" type="group">
+         <obj_property name="label">PTR</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="/testfixture/u_CONV/imgColPTR_rd" type="array">
+            <obj_property name="ElementShortName">imgColPTR_rd[7:0]</obj_property>
+            <obj_property name="ObjectShortName">imgColPTR_rd[7:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/imgRowPTR_rd" type="array">
+            <obj_property name="ElementShortName">imgRowPTR_rd[7:0]</obj_property>
+            <obj_property name="ObjectShortName">imgRowPTR_rd[7:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/offsetColPTR" type="array">
+            <obj_property name="ElementShortName">offsetColPTR[7:0]</obj_property>
+            <obj_property name="ObjectShortName">offsetColPTR[7:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_CONV/offsetRowPTR" type="array">
+            <obj_property name="ElementShortName">offsetRowPTR[7:0]</obj_property>
+            <obj_property name="ObjectShortName">offsetRowPTR[7:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+      </wvobject>
    </wvobject>
    <wvobject fp_name="group158" type="group">
       <obj_property name="label">L2</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/testfixture/u_CONV/STATE_L2_K0_RD" type="logic">
          <obj_property name="ElementShortName">STATE_L2_K0_RD</obj_property>
          <obj_property name="ObjectShortName">STATE_L2_K0_RD</obj_property>
       </wvobject>
-      <wvobject fp_name="/testfixture/u_CONV/STATE_L2_K1_RD" type="logic">
-         <obj_property name="ElementShortName">STATE_L2_K1_RD</obj_property>
-         <obj_property name="ObjectShortName">STATE_L2_K1_RD</obj_property>
-      </wvobject>
       <wvobject fp_name="/testfixture/u_CONV/STATE_L2_K0_WB" type="logic">
          <obj_property name="ElementShortName">STATE_L2_K0_WB</obj_property>
          <obj_property name="ObjectShortName">STATE_L2_K0_WB</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_CONV/STATE_L2_K1_RD" type="logic">
+         <obj_property name="ElementShortName">STATE_L2_K1_RD</obj_property>
+         <obj_property name="ObjectShortName">STATE_L2_K1_RD</obj_property>
       </wvobject>
       <wvobject fp_name="/testfixture/u_CONV/STATE_L2_K1_WB" type="logic">
          <obj_property name="ElementShortName">STATE_L2_K1_WB</obj_property>
@@ -397,6 +456,7 @@
       <wvobject fp_name="/testfixture/u_CONV/sharedCnt" type="array">
          <obj_property name="ElementShortName">sharedCnt[10:0]</obj_property>
          <obj_property name="ObjectShortName">sharedCnt[10:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="/testfixture/u_CONV/sharedReg1_rd" type="array">

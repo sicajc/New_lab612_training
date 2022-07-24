@@ -116,13 +116,11 @@ wire L0_imgRightBoundReach_Flag = STATE_L0_K1_WB ? (imgColPTR_rd == IMAGE_WIDTH_
 
 wire L1_K0_MaxPoolingCompare_DoneFlag = STATE_L1_K0_MAXPOOLING_COMPARE_MAX ? (sharedCnt == MP_KERNAL_SIZE) :'d0;
 wire L1_K1_MaxPoolingCompare_DoneFlag = STATE_L1_K1_MAXPOOLING_COMPARE_MAX ? (sharedCnt == MP_KERNAL_SIZE) :'d0;
-wire L1_imgRightBoundReach_Flag = STATE_L1_K1_MAXPOOLING_WB ? (imgRowPTR_rd == IMAGE_WIDTH_HEIGHT - 1) :'d0;
-wire L1_DoneFlag = STATE_L1_K0_MAXPOOLING_WB || STATE_L1_K0_MAXPOOLING_WB ? ((imgRowPTR_rd == IMAGE_WIDTH_HEIGHT-1) && (imgColPTR_rd == IMAGE_WIDTH_HEIGHT - 1)) : 'd0;
+wire L1_imgRightBoundReach_Flag = STATE_L1_K1_MAXPOOLING_WB ? (imgColPTR_rd == IMAGE_WIDTH_HEIGHT - 2) :'d0;
+wire L1_DoneFlag = STATE_L1_K1_MAXPOOLING_WB ? (maxPoolingWriteAddr == 'd1023) : 'd0;
 
-//Needs 1 cnt only uses sharedCnt
-wire L2_K0_flatten_DoneFlag = (sharedCnt == MP_IMG_RD_DONE);
-wire L2_K1_flatten_DoneFlag = (sharedCnt == MP_IMG_RD_DONE);
-
+wire L2_K0_flatten_DoneFlag = STATE_L2_K0_RD ?  (sharedCnt == MP_IMG_RD_DONE) : 'd0;
+wire L2_K1_flatten_DoneFlag = STATE_L2_K1_RD ? (sharedCnt == MP_IMG_RD_DONE)  : 'd0 ;
 
 //----------------------------------CONTROL_PATH--------------------------------//
 always @(posedge clk or posedge reset)
@@ -163,7 +161,7 @@ begin
         end
         L1_K1_MAXPOOLING_COMPARE_MAX:
         begin
-            mainCTR_next_state = L1_K1_MaxPoolingCompare_DoneFlag ? L1_K0_MAXPOOLING_WB : L1_K1_MAXPOOLING_COMPARE_MAX;
+            mainCTR_next_state = L1_K1_MaxPoolingCompare_DoneFlag ? L1_K1_MAXPOOLING_WB : L1_K1_MAXPOOLING_COMPARE_MAX;
         end
         L1_K1_MAXPOOLING_WB:
         begin
@@ -171,19 +169,19 @@ begin
         end
         L2_K0_RD:
         begin
-            mainCTR_current_state = L2_K0_WB;
+            mainCTR_next_state = L2_K0_flatten_DoneFlag ? L2_K1_RD : L2_K0_WB;
         end
         L2_K0_WB:
         begin
-            mainCTR_current_state = L2_K0_flatten_DoneFlag ? L2_K1_RD : L2_K0_RD;
+            mainCTR_next_state = L2_K0_RD;
         end
         L2_K1_RD:
         begin
-            mainCTR_current_state = L2_K1_WB;
+            mainCTR_next_state = L2_K1_flatten_DoneFlag ? DONE: L2_K1_WB;
         end
         L2_K1_WB:
         begin
-            mainCTR_current_state = L2_K1_flatten_DoneFlag ? DONE : L2_K1_RD;
+            mainCTR_next_state = L2_K1_RD;
         end
         DONE:
         begin
@@ -214,6 +212,14 @@ begin
             begin
                 sharedCnt <= sharedCnt + 'd1;
             end
+            L2_K0_RD,L2_K0_WB:
+            begin
+                sharedCnt <= L2_K0_flatten_DoneFlag ? 'd0 : (STATE_L2_K0_WB ? sharedCnt + 'd1  : sharedCnt) ;
+            end
+            L2_K1_RD,L2_K1_WB:
+            begin
+                sharedCnt <= L2_K1_flatten_DoneFlag ? 'd0 : (STATE_L2_K1_WB ? sharedCnt + 'd1  : sharedCnt) ;
+            end
             default:
             begin
                 sharedCnt <= 'd0;
@@ -221,6 +227,28 @@ begin
         endcase
     end
 end
+
+always @(posedge clk or posedge reset)
+begin
+    sharedCnt2 <= reset ? 'd0 : sharedCnt2_wr;
+end
+
+always @(*)
+begin
+    if(STATE_L1_K1_MAXPOOLING_WB)
+    begin
+        sharedCnt2_wr = L1_DoneFlag ? 'd0 : sharedCnt2_wr + 'd1 ;
+    end
+    else if(STATE_L2_K0_WB || STATE_L2_K1_WB)
+    begin
+        sharedCnt2_wr = L2_K0_flatten_DoneFlag ? 'd0 : sharedCnt2_wr + 'd2;
+    end
+    else
+    begin
+       sharedCnt2_wr = sharedCnt2;
+    end
+end
+
 
 //IMG_PTR
 reg[PTR_LENGTH-1:0] imgColPTR_wr;
@@ -242,8 +270,8 @@ begin
         end
         L1_K1_MAXPOOLING_WB:
         begin
-            imgColPTR_wr  = L1_imgRightBoundReach_Flag ? 'd0 : imgColPTR_rd + 'd1;
-            imgRowPTR_wr  = L1_imgRightBoundReach_Flag ? (imgRowPTR_rd + 'd1) : imgRowPTR_rd;
+            imgColPTR_wr  = L1_imgRightBoundReach_Flag ? 'd0 : imgColPTR_rd + 'd2;
+            imgRowPTR_wr  = L1_imgRightBoundReach_Flag ? (imgRowPTR_rd + 'd2) : imgRowPTR_rd;
         end
         default:
         begin
@@ -252,8 +280,6 @@ begin
         end
     endcase
 end
-
-wire[11:0] maxPoolingWriteAddr = imgColPTR_rd + imgRowPTR_rd * IMAGE_WIDTH_HEIGHT;
 
 parameter NO_ACCESS= 3'b000;
 parameter L0_MEM0_ACCESS= 3'b001;
@@ -325,6 +351,11 @@ begin
             cdata_wr = L0_Result_rd;
             caddr_wr = zeroPadWriteAddr;
         end
+        L1_K0_MAXPOOLING_WB,L1_K1_MAXPOOLING_WB:
+        begin
+            cdata_wr = tempMax_rd;
+            caddr_wr = maxPoolingWriteAddr;
+        end
         L2_K0_WB:
         begin
             cdata_wr = K0_K1_temp_rd;
@@ -342,7 +373,26 @@ begin
         end
     endcase
 end
-//caddr_rd , cdata_rd
+
+//caddr_rd
+always @(*)
+begin
+    case(mainCTR_current_state)
+        L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX:
+        begin
+            caddr_rd = maxPooling_offsetAddr;
+        end
+        L2_K0_RD,L2_K1_RD:
+        begin
+            caddr_rd = flatten_ReadAddr;
+        end
+        default:
+        begin
+            caddr_rd = 0;
+        end
+    endcase
+
+end
 
 //Busy
 always @(*)
@@ -381,7 +431,8 @@ begin
         begin
             {sharedReg1Ld,sharedReg2Ld} = 2'b11;
         end
-        L0_K0_BIAS_RELU,L0_K1_BIAS_RELU,L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX,L2_K0_RD,L2_K1_RD:
+        L0_K0_BIAS_RELU,L0_K1_BIAS_RELU,L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX,L2_K0_RD,L2_K1_RD,
+        L1_K0_MAXPOOLING_WB,L1_K1_MAXPOOLING_WB:
         begin
             {sharedReg1Ld,sharedReg2Ld} = 2'b10;
         end
@@ -412,9 +463,14 @@ begin
             sharedReg1_wr = ReLU_result_wr;
             sharedReg2_wr = sharedReg2_rd;
         end
-        L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX:
+        L1_K0_MAXPOOLING_COMPARE_MAX,L1_K1_MAXPOOLING_COMPARE_MAX,L1_K0_MAXPOOLING_WB,L1_K1_MAXPOOLING_WB:
         begin
             sharedReg1_wr = tempMax_wr;
+            sharedReg2_wr = 0;
+        end
+        L2_K0_RD,L2_K1_RD,L2_K1_WB,L2_K0_WB:
+        begin
+            sharedReg1_wr = cdata_rd;
             sharedReg2_wr = 0;
         end
         default:
@@ -682,7 +738,15 @@ wire[DATA_WIDTH-1:0] L0_Result_rd = STATE_L0_K0_WB ? conv_K0_Result_rd : (STATE_
 
 //L1
 //K0 K1 MP
+reg[11:0] sharedCnt2;
+reg[11:0] sharedCnt2_wr;
+
+wire[11:0] maxPoolingWriteAddr = sharedCnt2;
+wire[DATA_WIDTH-1:0] maxPooling_offsetAddr;
 wire[DATA_WIDTH-1:0] tempMax_rd = sharedReg1_rd;
+
+assign maxPooling_offsetAddr = STATE_L1_K0_MAXPOOLING_COMPARE_MAX || STATE_L1_K1_MAXPOOLING_COMPARE_MAX ?
+       offsetColPTR + offsetRowPTR * IMAGE_WIDTH_HEIGHT : 'd0;
 
 always @(*)
 begin
@@ -698,12 +762,15 @@ begin
     end
 end
 
-wire[DATA_WIDTH-1:0] tempMax_wr = compare_gt ? cdata_rd : tempMax_rd;
+wire[DATA_WIDTH-1:0] tempMax_wr = STATE_L1_K0_MAXPOOLING_WB || STATE_L1_K1_MAXPOOLING_WB ? 'd0 : (compare_gt ? cdata_rd : tempMax_rd);
 
 //L2
 //K0,K1 RD WB
+wire[DATA_WIDTH-1:0] flatten_ReadAddr = sharedCnt;
 wire[DATA_WIDTH-1:0] K0_K1_temp_rd = sharedReg1_rd;
-reg[PTR_LENGTH-1:0] L2_K0_addr,L2_K1_addr;
+wire[PTR_LENGTH-1:0] L2_K0_addr,L2_K1_addr;
 
+assign L2_K0_addr = sharedCnt2;
+assign L2_K1_addr = sharedCnt2;
 
 endmodule
