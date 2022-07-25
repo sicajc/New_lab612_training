@@ -15,7 +15,7 @@ parameter IMAGE_HEIGT   = 128;
 parameter STI_ROM_DEPTH = 1024;
 parameter RES_RAM_DEPTH = 16384;
 parameter DATA_WIDTH = 8;
-parameter PTR_LENGTH = 8;
+parameter PTR_LENGTH = 7;
 
 //States
 parameter IDLE = 'd0;
@@ -48,7 +48,8 @@ wire[PTR_LENGTH-1:0] imgRowPTR = resRAM_addrCnt[13:7];
 reg imgProcessMode;
 
 //Flags
-wire isObject_flag                          = STATE_DET_OBJECT||STATE_FORWARD_WINDOW_WB||STATE_BACKWARD_WINDOW_WB ? (imgPixel == 'd1) : 0;
+reg IsObject_flag;
+wire isObject_flag = ReadLocalPixel ? IsObject_flag : (STATE_DET_OBJECT || WriteLocalPixel)  ? (imgPixel == 'd1) : 'dz;
 wire forwardWindowingDone_flag              = STATE_DET_OBJECT ? (resRAM_addrCnt == RES_RAM_DEPTH - 1) : 0;
 wire backwardWindowingDone_flag             = STATE_DET_OBJECT ? (resRAM_addrCnt == 'd0) : 0;
 wire localForwardWindowDone_flag            = STATE_FORWARD_WINDOWING  ?  localImageReadDone_flag : 0    ;
@@ -58,7 +59,7 @@ wire localBackwardWindowDone_flag           = STATE_BACKWARD_WINDOWING ?  localI
 wire[2:0] ForwardWindowingDetObject = (isObject_flag ? FORWARD_WINDOWING : FORWARD_WINDOW_WB);
 wire[2:0] BackwardWindowingDetObject = (isObject_flag ? BACKWARD_WINDOWING : BACKWARD_WINDOW_WB);
 
-wire[3:0] localPixelAddr = imgColPTR[3:0];
+wire[3:0] localPixelAddr = ~imgColPTR[3:0];
 wire imgPixel = imgPixelArray_i[localPixelAddr];
 
 wire[2:0] ForwardWindowing =  (forwardWindowingDone_flag ? DET_OBJECT :  ForwardWindowingDetObject);
@@ -211,12 +212,13 @@ wire WriteLocalPixel = STATE_BACKWARD_WINDOW_WB||STATE_FORWARD_WINDOW_WB;
 assign {sti_rd,sti_addr,imgPixelArray_i} = STATE_DET_OBJECT||WriteLocalPixel ? {1'b1,imgPixelAddr_o,sti_di} : {1'bz,10'dz,16'dz};
 
 //res_addr , res_wr , res_rd ,res_do , res_di
-assign res_addr =         WriteLocalPixel ? pixelWriteAddr_o : (ReadLocalPixel ? pixelReadAddr_o : 'd0);
+assign res_addr =         WriteLocalPixel ? pixelWriteAddr_o : (ReadLocalPixel ? pixelReadAddr_o : 'dz);
 assign res_wr   =         WriteLocalPixel ? 1 : 0;
-assign res_do   =         WriteLocalPixel ? (isObject_flag ? pixelWriteData_o :'d0): 'd0;
+assign res_do   =         WriteLocalPixel ? (isObject_flag ? pixelWriteData_o :'d0): 'dz;
 assign res_rd          =  ReadLocalPixel  ? 1 : 0;
-assign pixelReadData_i =  ReadLocalPixel ? res_di : 'd0;
+assign pixelReadData_i =  ReadLocalPixel ? res_di : 'dz;
 
+//1672 is pixel in FW but not in BW since you use 101 in FW but 104 in BW! omg
 //sti_ROM_AddrCnt & resRAM_addrCnt
 wire forwardWindow_nextPixelArray_flag = (resRAM_addrCnt[3:0] == 4'b1111);
 wire backwardWindow_nextPixelArray_flag = (resRAM_addrCnt[3:0] == 4'b0000);
@@ -231,12 +233,12 @@ begin
     else if(STATE_FORWARD_WINDOW_WB)
     begin
         stiROM_addrCnt <= forwardWindowingDone_flag ? (STI_ROM_DEPTH-1) : (forwardWindow_nextPixelArray_flag ? stiROM_addrCnt + 'd1 : stiROM_addrCnt);
-        resRAM_addrCnt <= forwardWindowingDone_flag ? (RES_RAM_DEPTH-1) : (WriteLocalPixel ? resRAM_addrCnt + 'd1 :resRAM_addrCnt) ;
+        resRAM_addrCnt <= forwardWindowingDone_flag ? (RES_RAM_DEPTH-1) : resRAM_addrCnt + 'd1;
     end
     else if(STATE_BACKWARD_WINDOW_WB)
     begin
-        stiROM_addrCnt <= backwardWindowingDone_flag ? 'd0 :(backwardWindow_nextPixelArray_flag ? stiROM_addrCnt - 'd1 : stiROM_addrCnt);
-        resRAM_addrCnt <= backwardWindowingDone_flag ? 'd0 : WriteLocalPixel ? resRAM_addrCnt - 'd1 : resRAM_addrCnt;
+        stiROM_addrCnt <= backwardWindowingDone_flag ? 'd0 : (backwardWindow_nextPixelArray_flag ? stiROM_addrCnt - 'd1 : stiROM_addrCnt);
+        resRAM_addrCnt <= backwardWindowingDone_flag ? 'd0 : resRAM_addrCnt - 'd1;
     end
     else
     begin
@@ -251,6 +253,27 @@ begin
     imgProcessMode <= !reset ? 'd1 : forwardWindowingDone_flag ? 'd0 : imgProcessMode;
 end
 
+
+always @(posedge clk or negedge reset)
+begin
+    if(!reset)
+    begin
+        IsObject_flag <= 'd0;
+    end
+    else if(STATE_DET_OBJECT)
+    begin
+        IsObject_flag <= isObject_flag;
+    end
+    else if(WriteLocalPixel)
+    begin
+        IsObject_flag <= 'd0;
+    end
+    else
+    begin
+        IsObject_flag <= IsObject_flag;
+    end
+end
+
 //-------------------------DATAPATH----------------------//
 reg[DATA_WIDTH-1:0] minPixelTempReg;
 wire NotANObject = !isObject_flag;
@@ -258,8 +281,31 @@ wire NotANObject = !isObject_flag;
 wire[DATA_WIDTH-1:0] forwardwindowingResult,backwardwindowingResult;
 assign forwardwindowingResult  = STATE_FORWARD_WINDOW_WB  ? minPixelTempReg + 'd1 : 'd0;
 assign backwardwindowingResult = STATE_BACKWARD_WINDOW_WB ?  minPixelTempReg : 'd0;
+reg[DATA_WIDTH-1:0] comparatorInput1;
+reg[DATA_WIDTH-1:0] comparatorInput2;
 
-wire pixel_value_ltTemp_flag = pixelReadData_i < minPixelTempReg;
+wire pixel_value_ltTemp_flag = comparatorInput1 < comparatorInput2;
+wire objectPixel_flag = STATE_BACKWARD_WINDOWING ? (pixelOffsetCnt == 'd4) : 'd0;
+wire[DATA_WIDTH-1:0] backpassValue = pixelReadData_i + 'd1;
+
+always @(*)
+begin
+    if(STATE_FORWARD_WINDOWING)
+    begin
+        comparatorInput1 =  pixelReadData_i;
+        comparatorInput2 =  minPixelTempReg;
+    end
+    else if(STATE_BACKWARD_WINDOWING)
+    begin
+        comparatorInput1 = objectPixel_flag ? pixelReadData_i : backpassValue ;
+        comparatorInput2 = minPixelTempReg;
+    end
+    else
+    begin
+        comparatorInput1 =  'd0;
+        comparatorInput2 =  'd0;
+    end
+end
 
 always @(posedge clk or negedge reset)
 begin
@@ -267,9 +313,13 @@ begin
     begin
         minPixelTempReg <= 'd254;
     end
-    else if(ReadLocalPixel)
+    else if(STATE_FORWARD_WINDOWING)
     begin
         minPixelTempReg <= pixel_value_ltTemp_flag ? pixelReadData_i : minPixelTempReg;
+    end
+    else if(STATE_BACKWARD_WINDOWING)
+    begin
+        minPixelTempReg <= pixel_value_ltTemp_flag ? (objectPixel_flag ? pixelReadData_i : backpassValue) : minPixelTempReg;
     end
     else if(WriteLocalPixel)
     begin

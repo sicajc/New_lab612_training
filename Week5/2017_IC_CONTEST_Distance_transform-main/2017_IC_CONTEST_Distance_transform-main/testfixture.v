@@ -6,11 +6,11 @@
 // `ifdef TB1
 	`define PAT        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/Geometry_sti.dat"
 	`define FWEXP        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/Geometry_fwexp.dat"
-	`define BCEXP        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/ICC17_bcexp.dat"
+	`define BCEXP        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/Geometry_bcexp.dat"
 // `elsif TB2
 	// `define PAT        "./dat/ICC17_sti.dat"
-	// `define FWEXP        "./dat/ICC17_fwexp.dat"
-	// `define BCEXP        "./dat/ICC17_bcexp.dat"
+	// `define FWEXP        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/Geometry_fwexp.dat"
+	// `define BCEXP        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/ICC17_bcexp.dat"
 // `endif
 
 module testfixture;

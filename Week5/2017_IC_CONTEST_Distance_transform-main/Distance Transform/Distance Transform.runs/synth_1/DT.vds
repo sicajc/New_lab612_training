@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2021.1 (64-bit)
+# SW Build 3247384 on Thu Jun 10 19:36:33 MDT 2021
+# IP Build 3246043 on Fri Jun 11 00:30:35 MDT 2021
+# Start of session at: Tue Jul 26 03:11:51 2022
+# Process ID: 13656
+# Current directory: C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/Distance Transform/Distance Transform.runs/synth_1
+# Command line: vivado.exe -log DT.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source DT.tcl
+# Log file: C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/Distance Transform/Distance Transform.runs/synth_1/DT.vds
+# Journal file: C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/Distance Transform/Distance Transform.runs/synth_1\vivado.jou
+#-----------------------------------------------------------
+source DT.tcl -notrace

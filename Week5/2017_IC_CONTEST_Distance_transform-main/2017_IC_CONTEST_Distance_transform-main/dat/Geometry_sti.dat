@@ -101,9 +101,9 @@ FFE0      //Pixel 98: 65504
 FFFF      //Pixel 100: 65535
 FFFF      //Pixel 101: 65535
 FFFF      //Pixel 102: 65535
-FF00      //Pixel 103: 65280
-007F      //Pixel 104: 127
-FFFF      //Pixel 105: 65535
+FF00      //Pixel 103: 65280 ?
+007F      //Pixel 104: 127 ?
+FFFF      //Pixel 105: 65535 ?
 FFE0      //Pixel 106: 65504
 1FFF      //Pixel 107: 8191
 FFFF      //Pixel 108: 65535
