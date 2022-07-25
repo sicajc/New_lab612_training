@@ -37,6 +37,7 @@ wire STATE_DONE                 =                  currentState == DONE ;
 wire MODE_fowardWindow          =                  imgProcessMode == 'd1;
 wire MODE_backwardWindow        =                  imgProcessMode == 'd0;
 
+
 //CTR
 reg[2:0] currentState,nextState;
 reg[9:0] stiROM_addrCnt;
@@ -57,10 +58,13 @@ wire localBackwardWindowDone_flag           = STATE_BACKWARD_WINDOWING ?  localI
 wire[2:0] ForwardWindowingDetObject = (isObject_flag ? FORWARD_WINDOWING : FORWARD_WINDOW_WB);
 wire[2:0] BackwardWindowingDetObject = (isObject_flag ? BACKWARD_WINDOWING : BACKWARD_WINDOW_WB);
 
+wire[3:0] localPixelAddr = imgColPTR[3:0];
+wire imgPixel = imgPixelArray_i[localPixelAddr];
+
 wire[2:0] ForwardWindowing = (forwardWindowingDone_flag ? DET_OBJECT :  ForwardWindowingDetObject);
 wire[2:0] BackwardWindowing = (backwardWindowingDone_flag ? DONE : BackwardWindowingDetObject);
 
-//MAINCTR
+//-----------------------CONTROL_PATH--------------------//
 always @(posedge clk or negedge reset)
 begin
     currentState <= !reset ? IDLE : nextState;
@@ -187,15 +191,15 @@ begin
 end
 
 // I/O
-wire[9:0]  imgPixelAddr_o;
 wire[15:0] imgPixelArray_i;
 wire[7:0]  pixelReadData_i;
 
-wire[13:0] pixelWriteAddr_o;
-wire[13:0] pixelReadAddr_o;
-wire[7:0]  pixelWriteData_o;
+wire[9:0]  imgPixelAddr_o   = stiROM_addrCnt;
+wire[13:0] pixelWriteAddr_o = resRAM_addrCnt;
+wire[13:0] pixelReadAddr_o  = resRAM_addrCnt;
+wire[7:0]  pixelWriteData_o = MODE_fowardWindow ? forwardwindowingResult : backwardwindowingResult;
 
-wire ReadLocalPixel = STATE_FORWARD_WINDOWING||STATE_BACKWARD_WINDOWING;
+wire ReadLocalPixel =  STATE_FORWARD_WINDOWING||STATE_BACKWARD_WINDOWING;
 wire WriteLocalPixel = STATE_BACKWARD_WINDOW_WB||STATE_FORWARD_WINDOW_WB;
 
 //sti_rd,sti_addr,sti_di
@@ -269,8 +273,5 @@ begin
         minPixelTempReg <= minPixelTempReg;
     end
 end
-
-assign pixelWriteData_o = MODE_fowardWindow ? forwardwindowingResult : backwardwindowingResult;
-
 
 endmodule
