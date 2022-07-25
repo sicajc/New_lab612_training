@@ -3,15 +3,15 @@
 `define SDFFILE    "../SYN/DT_syn.sdf"	  // Modify your sdf file name
 `define End_CYCLE  100000000             // Modify cycle times once your design need more cycle times!
 
-`ifdef TB1
-	`define PAT        "./dat/Geometry_sti.dat"    
-	`define FWEXP        "./dat/Geometry_fwexp.dat"  
-	`define BCEXP        "./dat/Geometry_bcexp.dat"      
-`elsif TB2
-	`define PAT        "./dat/ICC17_sti.dat"    
-	`define FWEXP        "./dat/ICC17_fwexp.dat"
-	`define BCEXP        "./dat/ICC17_bcexp.dat"
-`endif
+// `ifdef TB1
+	`define PAT        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/Geometry_sti.dat"
+	`define FWEXP        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/Geometry_fwexp.dat"
+	`define BCEXP        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/dat/ICC17_bcexp.dat"
+// `elsif TB2
+	// `define PAT        "./dat/ICC17_sti.dat"
+	// `define FWEXP        "./dat/ICC17_fwexp.dat"
+	// `define BCEXP        "./dat/ICC17_bcexp.dat"
+// `endif
 
 module testfixture;
 
@@ -39,7 +39,7 @@ wire	[7:0]	res_di;
 
 integer		i, fw_err, bc_err;
 
-reg		fwpass_chk, bcpass_chk; 
+reg		fwpass_chk, bcpass_chk;
 reg	[7:0]	exp_pat, rel_pat;
 
 reg	[7:0]	fwexp_pat, bcexp_pat;
@@ -58,9 +58,9 @@ DT u_dut(		.clk( clk ), .reset( reset ),
 			.res_addr( res_addr ),
 			.res_do( res_do ),
 			.res_di( res_di ) );
-			
+
 sti_ROM  u_sti_ROM(.sti_rd(sti_rd), .sti_data(sti_di), .sti_addr(sti_addr), .clk(clk), .reset(reset));
-res_RAM  u_res_RAM(.res_rd(res_rd), .res_wr(res_wr), .res_addr(res_addr), .res_datain(res_do), .res_dataout(res_di), .clk(clk));   
+res_RAM  u_res_RAM(.res_rd(res_rd), .res_wr(res_wr), .res_addr(res_addr), .res_datain(res_do), .res_dataout(res_di), .clk(clk));
 
 
 always begin #(`CYCLE/2) clk = ~clk; end
@@ -74,17 +74,17 @@ initial begin
 	`elsif VCD
 		$dumpfile("DT.vcd");
 		$dumpvars;
-	`endif	
+	`endif
 end
 
 initial begin  // data input
 	$display("-----------------------------------------------------\n");
  	$display("START!!! Simulation Start .....\n");
  	$display("-----------------------------------------------------\n");
-   #1; reset = 1'b1; 
-   @(negedge clk) #1; reset = 1'b0; 
-   #(`CYCLE*3);    
-   @(negedge clk) #1;  reset = 1'b1; 
+   #1; reset = 1'b1;
+   @(negedge clk) #1; reset = 1'b0;
+   #(`CYCLE*3);
+   @(negedge clk) #1;  reset = 1'b1;
 end
 
 initial begin
@@ -110,18 +110,18 @@ fwpass_chk = 0;
 				if (exp_pat == rel_pat) begin
 					fw_err = fw_err;
 				end
-				else begin 
+				else begin
 					fw_err = fw_err+1;
 					if (fw_err <= 30) $display("FWPASS : Output pixel %d are wrong! the real output is %h, but expected result is %h", i, rel_pat, exp_pat);
 					if (fw_err == 31) begin $display("FWPASS : Find the wrong pixel reached a total of more than 30 !, Please check the code .....\n");  end
 				end
-				if( ((i%1000) === 0) || (i == 16383))begin  
+				if( ((i%1000) === 0) || (i == 16383))begin
 					if ( fw_err === 0)
       					$display("FWPASS : Output pixel: 0 ~ %d are correct!\n", i);
 					else
 					$display("FWPASS : Output Pixel: 0 ~ %d are wrong ! The wrong pixel reached a total of %d or more ! \n", i, fw_err);
-					
-  				end					
+
+  				end
 	end
 end */
 
@@ -132,28 +132,28 @@ bcpass_chk = 0;
 	bcpass_chk = 1;
 	bc_err = 0;
 	for (i=0; i <N_PAT ; i=i+1) begin
-				exp_pat = exp_bcpass[i]; 
+				exp_pat = exp_bcpass[i];
 				rel_pat = u_res_RAM.res_M[i];
 				if (exp_pat == rel_pat) begin
 				        bc_err = bc_err;
 				end
-				else begin 
+				else begin
 					bc_err = bc_err+1;
 					if (bc_err <= 30) $display(" Output pixel %d are wrong!the real output is %h, but expected result is %h", i, rel_pat, exp_pat);
 					if (bc_err == 31) begin $display(" Find the wrong pixel reached a total of more than 30 !, Please check the code .....\n");  end
 				end
-				if( ((i%1000) === 0) || (i == 16383))begin  
+				if( ((i%1000) === 0) || (i == 16383))begin
 					if ( bc_err === 0)
       					$display(" Output pixel: 0 ~ %d are correct!\n", i);
 					else
 					$display(" Output Pixel: 0 ~ %d are wrong ! The wrong pixel reached a total of %d or more ! \n", i, bc_err);
-					
-  				end					
+
+  				end
 	end
 end
 
 initial begin
-      @(posedge bcpass_chk)  #1;    
+      @(posedge bcpass_chk)  #1;
       if( bc_err == 0 ) begin
             $display("-------------------------------------------------------------\n");
 	    $display("Congratulations!!! All data have been generated successfully!\n");
@@ -185,9 +185,9 @@ initial begin
 	    $display("Forward-Pass FAIL! There are %d errors at forward-pass run!\n", fw_err);
 	    $display("---------- The test result is .....FAIL -------------\n");
 	    $display("                                                     \n");
-	 end   
+	 end
 end*/
-   
+
 endmodule
 
 
@@ -208,9 +208,9 @@ initial begin
 	@ (negedge reset) $readmemh (`PAT , sti_M);
 	end
 
-always@(negedge clk) 
+always@(negedge clk)
 	if (sti_rd) sti_data <= sti_M[sti_addr];
-	
+
 endmodule
 
 
@@ -238,6 +238,3 @@ always@(posedge clk)   // write data at posedge clock
 	if (res_wr) res_M[res_addr] <= res_datain;
 
 endmodule
-
-
-

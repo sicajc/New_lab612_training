@@ -41,15 +41,15 @@ wire MODE_backwardWindow        =                  imgProcessMode == 'd0;
 //CTR
 reg[2:0] currentState,nextState;
 reg[9:0] stiROM_addrCnt;
-reg[14:0] resRAM_addrCnt;
+reg[13:0] resRAM_addrCnt;
 reg[4:0] pixelOffsetCnt;
 wire[PTR_LENGTH-1:0] imgColPTR = resRAM_addrCnt[6:0];
 wire[PTR_LENGTH-1:0] imgRowPTR = resRAM_addrCnt[13:7];
 reg imgProcessMode;
 
 //Flags
-wire isObject_flag                          = STATE_DET_OBJECT ? (imgPixel == 'd1) : 0;
-wire forwardWindowingDone_flag              = STATE_DET_OBJECT ? (resRAM_addrCnt == RES_RAM_DEPTH) : 0;
+wire isObject_flag                          = STATE_DET_OBJECT||STATE_FORWARD_WINDOW_WB||STATE_BACKWARD_WINDOW_WB ? (imgPixel == 'd1) : 0;
+wire forwardWindowingDone_flag              = STATE_DET_OBJECT ? (resRAM_addrCnt == RES_RAM_DEPTH - 1) : 0;
 wire backwardWindowingDone_flag             = STATE_DET_OBJECT ? (resRAM_addrCnt == 'd0) : 0;
 wire localForwardWindowDone_flag            = STATE_FORWARD_WINDOWING  ?  localImageReadDone_flag : 0    ;
 wire localBackwardWindowDone_flag           = STATE_BACKWARD_WINDOWING ?  localImageReadDone_flag : 0    ;
@@ -61,7 +61,7 @@ wire[2:0] BackwardWindowingDetObject = (isObject_flag ? BACKWARD_WINDOWING : BAC
 wire[3:0] localPixelAddr = imgColPTR[3:0];
 wire imgPixel = imgPixelArray_i[localPixelAddr];
 
-wire[2:0] ForwardWindowing = (forwardWindowingDone_flag ? DET_OBJECT :  ForwardWindowingDetObject);
+wire[2:0] ForwardWindowing =  (forwardWindowingDone_flag ? DET_OBJECT :  ForwardWindowingDetObject);
 wire[2:0] BackwardWindowing = (backwardWindowingDone_flag ? DONE : BackwardWindowingDetObject);
 
 //-----------------------CONTROL_PATH--------------------//
@@ -108,8 +108,7 @@ begin
     endcase
 end
 //PixelOffsetCnt
-wire ReadOffsetPixel = STATE_BACKWARD_WINDOWING || FORWARD_WINDOWING;
-wire localImageReadDone_flag = (pixelOffsetCnt == 'd3) ;
+wire localImageReadDone_flag = STATE_FORWARD_WINDOWING  ? (pixelOffsetCnt == 'd3) : (pixelOffsetCnt == 'd4);
 
 always @(posedge clk or negedge reset)
 begin
@@ -117,7 +116,7 @@ begin
     begin
         pixelOffsetCnt <= 'd0;
     end
-    else if(ReadOffsetPixel)
+    else if(ReadLocalPixel)
     begin
         pixelOffsetCnt <= localImageReadDone_flag ? 'd0 : 'd1 + pixelOffsetCnt;
     end
@@ -128,8 +127,8 @@ begin
 end
 
 //LOCAL_IMG_OFFSET_PTRs
-reg[6:0] localImgOffsetColPTR;
-reg[6:0] localImgOffsetRowPTR;
+reg[6:0] localImgOffsetColPTR,localImgOffsetRowPTR;
+
 always @(*)
 begin
     case(currentState)
@@ -177,6 +176,10 @@ begin
                 begin
                     {localImgOffsetRowPTR,localImgOffsetColPTR} = {imgRowPTR + 7'd1,imgColPTR + 7'd1};
                 end
+                'd4:
+                begin
+                    {localImgOffsetRowPTR,localImgOffsetColPTR} = {imgRowPTR , imgColPTR};
+                end
                 default:
                 begin
                     {localImgOffsetRowPTR,localImgOffsetColPTR} = {imgRowPTR,imgColPTR};
@@ -190,31 +193,33 @@ begin
     endcase
 end
 
+assign done = STATE_DONE;
+
 // I/O
 wire[15:0] imgPixelArray_i;
 wire[7:0]  pixelReadData_i;
 
 wire[9:0]  imgPixelAddr_o   = stiROM_addrCnt;
 wire[13:0] pixelWriteAddr_o = resRAM_addrCnt;
-wire[13:0] pixelReadAddr_o  = resRAM_addrCnt;
+wire[13:0] pixelReadAddr_o  = {localImgOffsetRowPTR,localImgOffsetColPTR};
 wire[7:0]  pixelWriteData_o = MODE_fowardWindow ? forwardwindowingResult : backwardwindowingResult;
 
 wire ReadLocalPixel =  STATE_FORWARD_WINDOWING||STATE_BACKWARD_WINDOWING;
 wire WriteLocalPixel = STATE_BACKWARD_WINDOW_WB||STATE_FORWARD_WINDOW_WB;
 
 //sti_rd,sti_addr,sti_di
-assign {sti_rd,sti_addr,imgPixelArray_i} = STATE_DET_OBJECT ? {1'b1,imgPixelAddr_o,sti_di} : {1'b0,10'd0,16'd0};
+assign {sti_rd,sti_addr,imgPixelArray_i} = STATE_DET_OBJECT||WriteLocalPixel ? {1'b1,imgPixelAddr_o,sti_di} : {1'bz,10'dz,16'dz};
 
 //res_addr , res_wr , res_rd ,res_do , res_di
 assign res_addr =         WriteLocalPixel ? pixelWriteAddr_o : (ReadLocalPixel ? pixelReadAddr_o : 'd0);
 assign res_wr   =         WriteLocalPixel ? 1 : 0;
-assign res_do   =         WriteLocalPixel ? pixelWriteData_o : 'd0;
+assign res_do   =         WriteLocalPixel ? (isObject_flag ? pixelWriteData_o :'d0): 'd0;
 assign res_rd          =  ReadLocalPixel  ? 1 : 0;
 assign pixelReadData_i =  ReadLocalPixel ? res_di : 'd0;
 
 //sti_ROM_AddrCnt & resRAM_addrCnt
-wire forwardWindow_nextPixelArray_flag = (stiROM_addrCnt[3:0] == 4'b1111);
-wire backwardWindow_nextPixelArray_flag = (stiROM_addrCnt[3:0] == 4'b0000);
+wire forwardWindow_nextPixelArray_flag = (resRAM_addrCnt[3:0] == 4'b1111);
+wire backwardWindow_nextPixelArray_flag = (resRAM_addrCnt[3:0] == 4'b0000);
 
 always @(posedge clk or negedge reset)
 begin
@@ -230,8 +235,8 @@ begin
     end
     else if(STATE_BACKWARD_WINDOW_WB)
     begin
-        stiROM_addrCnt <=backwardWindowingDone_flag ? 'd0 :(backwardWindow_nextPixelArray_flag ? stiROM_addrCnt - 'd1 : stiROM_addrCnt);
-        resRAM_addrCnt <=backwardWindowingDone_flag ? 'd0 : WriteLocalPixel ? resRAM_addrCnt - 'd1 : resRAM_addrCnt;
+        stiROM_addrCnt <= backwardWindowingDone_flag ? 'd0 :(backwardWindow_nextPixelArray_flag ? stiROM_addrCnt - 'd1 : stiROM_addrCnt);
+        resRAM_addrCnt <= backwardWindowingDone_flag ? 'd0 : WriteLocalPixel ? resRAM_addrCnt - 'd1 : resRAM_addrCnt;
     end
     else
     begin
@@ -248,9 +253,11 @@ end
 
 //-------------------------DATAPATH----------------------//
 reg[DATA_WIDTH-1:0] minPixelTempReg;
+wire NotANObject = !isObject_flag;
+
 wire[DATA_WIDTH-1:0] forwardwindowingResult,backwardwindowingResult;
 assign forwardwindowingResult  = STATE_FORWARD_WINDOW_WB  ? minPixelTempReg + 'd1 : 'd0;
-assign backwardwindowingResult = STATE_BACKWARD_WINDOW_WB ? minPixelTempReg : 'd0;
+assign backwardwindowingResult = STATE_BACKWARD_WINDOW_WB ?  minPixelTempReg : 'd0;
 
 wire pixel_value_ltTemp_flag = pixelReadData_i < minPixelTempReg;
 
@@ -258,7 +265,7 @@ always @(posedge clk or negedge reset)
 begin
     if(!reset)
     begin
-        minPixelTempReg <= 'd255;
+        minPixelTempReg <= 'd254;
     end
     else if(ReadLocalPixel)
     begin
@@ -266,7 +273,7 @@ begin
     end
     else if(WriteLocalPixel)
     begin
-        minPixelTempReg <= 'd255;
+        minPixelTempReg <= 'd254;
     end
     else
     begin

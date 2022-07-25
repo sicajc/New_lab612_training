@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="testfixture_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="testfixture" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="169.401 ns"></ZoomEndTime>
+      <Cursor1Time time="68.800 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="462"></NameColumnWidth>
+      <ValueColumnWidth column_width="227"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="19" />
+   <wvobject fp_name="/testfixture/u_dut/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/reset" type="logic">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/done" type="logic">
+      <obj_property name="ElementShortName">done</obj_property>
+      <obj_property name="ObjectShortName">done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/sti_rd" type="logic">
+      <obj_property name="ElementShortName">sti_rd</obj_property>
+      <obj_property name="ObjectShortName">sti_rd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/sti_addr" type="array">
+      <obj_property name="ElementShortName">sti_addr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">sti_addr[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/sti_di" type="array">
+      <obj_property name="ElementShortName">sti_di[15:0]</obj_property>
+      <obj_property name="ObjectShortName">sti_di[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/res_wr" type="logic">
+      <obj_property name="ElementShortName">res_wr</obj_property>
+      <obj_property name="ObjectShortName">res_wr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/res_rd" type="logic">
+      <obj_property name="ElementShortName">res_rd</obj_property>
+      <obj_property name="ObjectShortName">res_rd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/res_addr" type="array">
+      <obj_property name="ElementShortName">res_addr[13:0]</obj_property>
+      <obj_property name="ObjectShortName">res_addr[13:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/res_do" type="array">
+      <obj_property name="ElementShortName">res_do[7:0]</obj_property>
+      <obj_property name="ObjectShortName">res_do[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_dut/res_di" type="array">
+      <obj_property name="ElementShortName">res_di[7:0]</obj_property>
+      <obj_property name="ObjectShortName">res_di[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="group93" type="group">
+      <obj_property name="label">States</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_dut/STATE_IDLE" type="logic">
+         <obj_property name="ElementShortName">STATE_IDLE</obj_property>
+         <obj_property name="ObjectShortName">STATE_IDLE</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/STATE_DET_OBJECT" type="logic">
+         <obj_property name="ElementShortName">STATE_DET_OBJECT</obj_property>
+         <obj_property name="ObjectShortName">STATE_DET_OBJECT</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/STATE_FORWARD_WINDOWING" type="logic">
+         <obj_property name="ElementShortName">STATE_FORWARD_WINDOWING</obj_property>
+         <obj_property name="ObjectShortName">STATE_FORWARD_WINDOWING</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/STATE_FORWARD_WINDOW_WB" type="logic">
+         <obj_property name="ElementShortName">STATE_FORWARD_WINDOW_WB</obj_property>
+         <obj_property name="ObjectShortName">STATE_FORWARD_WINDOW_WB</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/STATE_BACKWARD_WINDOWING" type="logic">
+         <obj_property name="ElementShortName">STATE_BACKWARD_WINDOWING</obj_property>
+         <obj_property name="ObjectShortName">STATE_BACKWARD_WINDOWING</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/STATE_BACKWARD_WINDOW_WB" type="logic">
+         <obj_property name="ElementShortName">STATE_BACKWARD_WINDOW_WB</obj_property>
+         <obj_property name="ObjectShortName">STATE_BACKWARD_WINDOW_WB</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/STATE_DONE" type="logic">
+         <obj_property name="ElementShortName">STATE_DONE</obj_property>
+         <obj_property name="ObjectShortName">STATE_DONE</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group94" type="group">
+      <obj_property name="label">Modes</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_dut/MODE_fowardWindow" type="logic">
+         <obj_property name="ElementShortName">MODE_fowardWindow</obj_property>
+         <obj_property name="ObjectShortName">MODE_fowardWindow</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/MODE_backwardWindow" type="logic">
+         <obj_property name="ElementShortName">MODE_backwardWindow</obj_property>
+         <obj_property name="ObjectShortName">MODE_backwardWindow</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/imgProcessMode" type="logic">
+         <obj_property name="ElementShortName">imgProcessMode</obj_property>
+         <obj_property name="ObjectShortName">imgProcessMode</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group95" type="group">
+      <obj_property name="label">CNTs</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_dut/stiROM_addrCnt" type="array">
+         <obj_property name="ElementShortName">stiROM_addrCnt[9:0]</obj_property>
+         <obj_property name="ObjectShortName">stiROM_addrCnt[9:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/resRAM_addrCnt" type="array">
+         <obj_property name="ElementShortName">resRAM_addrCnt[14:0]</obj_property>
+         <obj_property name="ObjectShortName">resRAM_addrCnt[14:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/pixelOffsetCnt" type="array">
+         <obj_property name="ElementShortName">pixelOffsetCnt[4:0]</obj_property>
+         <obj_property name="ObjectShortName">pixelOffsetCnt[4:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group96" type="group">
+      <obj_property name="label">PTRS</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_dut/imgColPTR" type="array">
+         <obj_property name="ElementShortName">imgColPTR[7:0]</obj_property>
+         <obj_property name="ObjectShortName">imgColPTR[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/imgRowPTR" type="array">
+         <obj_property name="ElementShortName">imgRowPTR[7:0]</obj_property>
+         <obj_property name="ObjectShortName">imgRowPTR[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/localImgOffsetColPTR" type="array">
+         <obj_property name="ElementShortName">localImgOffsetColPTR[6:0]</obj_property>
+         <obj_property name="ObjectShortName">localImgOffsetColPTR[6:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/localImgOffsetRowPTR" type="array">
+         <obj_property name="ElementShortName">localImgOffsetRowPTR[6:0]</obj_property>
+         <obj_property name="ObjectShortName">localImgOffsetRowPTR[6:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/localPixelAddr" type="array">
+         <obj_property name="ElementShortName">localPixelAddr[3:0]</obj_property>
+         <obj_property name="ObjectShortName">localPixelAddr[3:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group97" type="group">
+      <obj_property name="label">Flags</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_dut/isObject_flag" type="logic">
+         <obj_property name="ElementShortName">isObject_flag</obj_property>
+         <obj_property name="ObjectShortName">isObject_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/forwardWindowingDone_flag" type="logic">
+         <obj_property name="ElementShortName">forwardWindowingDone_flag</obj_property>
+         <obj_property name="ObjectShortName">forwardWindowingDone_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/backwardWindowingDone_flag" type="logic">
+         <obj_property name="ElementShortName">backwardWindowingDone_flag</obj_property>
+         <obj_property name="ObjectShortName">backwardWindowingDone_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/localForwardWindowDone_flag" type="logic">
+         <obj_property name="ElementShortName">localForwardWindowDone_flag</obj_property>
+         <obj_property name="ObjectShortName">localForwardWindowDone_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/localBackwardWindowDone_flag" type="logic">
+         <obj_property name="ElementShortName">localBackwardWindowDone_flag</obj_property>
+         <obj_property name="ObjectShortName">localBackwardWindowDone_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/localImageReadDone_flag" type="logic">
+         <obj_property name="ElementShortName">localImageReadDone_flag</obj_property>
+         <obj_property name="ObjectShortName">localImageReadDone_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/forwardWindow_nextPixelArray_flag" type="logic">
+         <obj_property name="ElementShortName">forwardWindow_nextPixelArray_flag</obj_property>
+         <obj_property name="ObjectShortName">forwardWindow_nextPixelArray_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/backwardWindow_nextPixelArray_flag" type="logic">
+         <obj_property name="ElementShortName">backwardWindow_nextPixelArray_flag</obj_property>
+         <obj_property name="ObjectShortName">backwardWindow_nextPixelArray_flag</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group105" type="group">
+      <obj_property name="label">Local_Variables</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_dut/ForwardWindowingDetObject" type="array">
+         <obj_property name="ElementShortName">ForwardWindowingDetObject[2:0]</obj_property>
+         <obj_property name="ObjectShortName">ForwardWindowingDetObject[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/BackwardWindowingDetObject" type="array">
+         <obj_property name="ElementShortName">BackwardWindowingDetObject[2:0]</obj_property>
+         <obj_property name="ObjectShortName">BackwardWindowingDetObject[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/ForwardWindowing" type="array">
+         <obj_property name="ElementShortName">ForwardWindowing[2:0]</obj_property>
+         <obj_property name="ObjectShortName">ForwardWindowing[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/BackwardWindowing" type="array">
+         <obj_property name="ElementShortName">BackwardWindowing[2:0]</obj_property>
+         <obj_property name="ObjectShortName">BackwardWindowing[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/ReadOffsetPixel" type="logic">
+         <obj_property name="ElementShortName">ReadOffsetPixel</obj_property>
+         <obj_property name="ObjectShortName">ReadOffsetPixel</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/ReadLocalPixel" type="logic">
+         <obj_property name="ElementShortName">ReadLocalPixel</obj_property>
+         <obj_property name="ObjectShortName">ReadLocalPixel</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/WriteLocalPixel" type="logic">
+         <obj_property name="ElementShortName">WriteLocalPixel</obj_property>
+         <obj_property name="ObjectShortName">WriteLocalPixel</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group106" type="group">
+      <obj_property name="label">I/O</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_dut/imgPixelArray_i" type="array">
+         <obj_property name="ElementShortName">imgPixelArray_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">imgPixelArray_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/pixelReadData_i" type="array">
+         <obj_property name="ElementShortName">pixelReadData_i[7:0]</obj_property>
+         <obj_property name="ObjectShortName">pixelReadData_i[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/imgPixelAddr_o" type="array">
+         <obj_property name="ElementShortName">imgPixelAddr_o[9:0]</obj_property>
+         <obj_property name="ObjectShortName">imgPixelAddr_o[9:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/pixelWriteAddr_o" type="array">
+         <obj_property name="ElementShortName">pixelWriteAddr_o[13:0]</obj_property>
+         <obj_property name="ObjectShortName">pixelWriteAddr_o[13:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/pixelReadAddr_o" type="array">
+         <obj_property name="ElementShortName">pixelReadAddr_o[13:0]</obj_property>
+         <obj_property name="ObjectShortName">pixelReadAddr_o[13:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/pixelWriteData_o" type="array">
+         <obj_property name="ElementShortName">pixelWriteData_o[7:0]</obj_property>
+         <obj_property name="ObjectShortName">pixelWriteData_o[7:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group115" type="group">
+      <obj_property name="label">DATAPATH</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_dut/minPixelTempReg" type="array">
+         <obj_property name="ElementShortName">minPixelTempReg[7:0]</obj_property>
+         <obj_property name="ObjectShortName">minPixelTempReg[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/forwardwindowingResult" type="array">
+         <obj_property name="ElementShortName">forwardwindowingResult[7:0]</obj_property>
+         <obj_property name="ObjectShortName">forwardwindowingResult[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/backwardwindowingResult" type="array">
+         <obj_property name="ElementShortName">backwardwindowingResult[7:0]</obj_property>
+         <obj_property name="ObjectShortName">backwardwindowingResult[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/pixel_value_ltTemp_flag" type="logic">
+         <obj_property name="ElementShortName">pixel_value_ltTemp_flag</obj_property>
+         <obj_property name="ObjectShortName">pixel_value_ltTemp_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_dut/imgPixel" type="logic">
+         <obj_property name="ElementShortName">imgPixel</obj_property>
+         <obj_property name="ObjectShortName">imgPixel</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

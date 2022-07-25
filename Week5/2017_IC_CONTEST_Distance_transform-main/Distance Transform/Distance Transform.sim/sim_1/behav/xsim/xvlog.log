@@ -1,0 +1,21 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module DT
+WARNING: [VRFC 10-3380] identifier 'currentState' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:30]
+WARNING: [VRFC 10-3380] identifier 'currentState' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:31]
+WARNING: [VRFC 10-3380] identifier 'currentState' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:32]
+WARNING: [VRFC 10-3380] identifier 'currentState' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:33]
+WARNING: [VRFC 10-3380] identifier 'currentState' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:34]
+WARNING: [VRFC 10-3380] identifier 'currentState' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:35]
+WARNING: [VRFC 10-3380] identifier 'currentState' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:36]
+WARNING: [VRFC 10-3380] identifier 'imgProcessMode' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:37]
+WARNING: [VRFC 10-3380] identifier 'imgProcessMode' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:38]
+WARNING: [VRFC 10-3380] identifier 'imgPixel' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:51]
+WARNING: [VRFC 10-3380] identifier 'localImageReadDone_flag' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:54]
+WARNING: [VRFC 10-3380] identifier 'localImageReadDone_flag' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:55]
+WARNING: [VRFC 10-3380] identifier 'imgPixelArray_i' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:62]
+WARNING: [VRFC 10-3380] identifier 'ReadLocalPixel' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:119]
+WARNING: [VRFC 10-3380] identifier 'forwardwindowingResult' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/DT.v:205]
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/testfixture.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module testfixture
+INFO: [VRFC 10-311] analyzing module sti_ROM
+INFO: [VRFC 10-311] analyzing module res_RAM
