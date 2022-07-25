@@ -1,0 +1,15 @@
+Copyright 1986-2021 Xilinx, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2021.1 (win64) Build 3247384 Thu Jun 10 19:36:33 MDT 2021
+| Date         : Tue Jul 26 03:15:00 2022
+| Host         : LAPTOP-O6G6O33P running 64-bit major release  (build 9200)
+| Command      : report_bus_skew -warn_on_violation -file DT_bus_skew_routed.rpt -pb DT_bus_skew_routed.pb -rpx DT_bus_skew_routed.rpx
+| Design       : DT
+| Device       : 7k70t-fbv676
+| Speed File   : -1  PRODUCTION 1.12 2017-02-17
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Bus Skew Report
+
+No bus skew constraints
+

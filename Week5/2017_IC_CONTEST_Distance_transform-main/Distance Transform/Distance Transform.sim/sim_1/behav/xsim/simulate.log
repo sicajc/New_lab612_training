@@ -1,0 +1,52 @@
+Time resolution is 1 ps
+-----------------------------------------------------
+
+START!!! Simulation Start .....
+
+-----------------------------------------------------
+
+ Output pixel: 0 ~           0 are correct!
+
+ Output pixel: 0 ~        1000 are correct!
+
+ Output pixel: 0 ~        2000 are correct!
+
+ Output pixel: 0 ~        3000 are correct!
+
+ Output pixel: 0 ~        4000 are correct!
+
+ Output pixel: 0 ~        5000 are correct!
+
+ Output pixel: 0 ~        6000 are correct!
+
+ Output pixel: 0 ~        7000 are correct!
+
+ Output pixel: 0 ~        8000 are correct!
+
+ Output pixel: 0 ~        9000 are correct!
+
+ Output pixel: 0 ~       10000 are correct!
+
+ Output pixel: 0 ~       11000 are correct!
+
+ Output pixel: 0 ~       12000 are correct!
+
+ Output pixel: 0 ~       13000 are correct!
+
+ Output pixel: 0 ~       14000 are correct!
+
+ Output pixel: 0 ~       15000 are correct!
+
+ Output pixel: 0 ~       16000 are correct!
+
+-------------------------------------------------------------
+
+Congratulations!!! All data have been generated successfully!
+
+---------- The test result is ..... PASS --------------------
+
+                                                     
+
+-----------------------------------------------------
+
+$finish called at time : 1281259330 ps : File "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week5/2017_IC_CONTEST_Distance_transform-main/2017_IC_CONTEST_Distance_transform-main/testfixture.v" Line 173
