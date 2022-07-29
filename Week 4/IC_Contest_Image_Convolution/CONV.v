@@ -39,7 +39,8 @@ reg[PTR_LENGTH-1:0] imgRowPTR;
 
 //CONSTANTS
 parameter KERNAL_WIDTH = 3;
-parameter KERNAL_MID   = 1;parameter IMAGE_WIDTH_HEIGHT = 64;
+parameter KERNAL_MID   = 1;
+parameter IMAGE_WIDTH_HEIGHT = 64;
 parameter PIXELS_OF_KERNAL = 'd8;
 parameter MP_KERNAL_SIZE = 'd3;
 parameter MP_IMG_RD_DONE = 1023;
