@@ -156,8 +156,9 @@ wire[2:0] pivotValue = jobTempSequenceReg[pivotIndexReg];
 wire[2:0] headPTRValue = jobTempSequenceReg[headPTR];
 wire[2:0] tailPTRValue = jobTempSequenceReg[tailPTR];
 
-wire compareValue_gt_flag;
-wire headPTRValue_gt_flag;
+wire compareTailPTRValue_gt_flag = tailPTRValue > pivotValue;
+wire compareHeadPTRValue_gt_flag = headPTRValue > pivotValue;
+wire headPTRValue_gt_tailPTR_flag = headPTRValue > tailPTRValue;
 
 always @(posedge CLK)
 begin
@@ -169,7 +170,35 @@ begin
         end
         else if(STATE_FIND_PIVOT)
         begin
-            jobTempSequenceReg[pivotIndexReg] <= compareValue_gt_flag ? (headPTRValue_gt_flag ? headPTRValue: tailPTRValue) : pivotValue;
+            case({compareTailPTRValue_gt_flag,compareHeadPTRValue_gt_flag})
+                2'b11:
+                begin
+                    if(headPTRValue_gt_tailPTR_flag)
+                    begin
+                        jobTempSequenceReg[pivotIndexReg] <= headPTRValue;
+                        jobTempSequenceReg[headPTR]       <= headPTRValue;
+                        jobTempSequenceReg[tailPTR]       <= headPTRValue;
+                    end
+                    else
+                    begin
+                        jobTempSequenceReg[pivotIndexReg] <= tailPTRValue;
+                        jobTempSequenceReg[headPTR]       <= tailPTRValue;
+                        jobTempSequenceReg[tailPTR]       <= tailPTRValue;
+                    end
+                end
+                2'b10:
+                begin
+                    jobTempSequenceReg[pivotIndexReg] <= tailPTRValue;
+                    jobTempSequenceReg[tailPTR] <= pivotValue;
+                end
+                2'b01:
+                begin
+                    jobTempSequenceReg[pivotIndexReg] <= headPTRValue;
+                    jobTempSequenceReg[headPTR] <= pivotValue;
+                end
+                default:
+                    jobTempSequenceReg[pivotIndexReg] <= pivotValue;
+            endcase
         end
         else if(STATE_FLIP)
         begin
@@ -331,17 +360,24 @@ end
 always @(*)
 begin
     case(findPivotLocationBitStream)
-    7'b1xxxxxx: pivotIndex_wr = 'd6;
-    7'b01xxxxx: pivotIndex_wr = 'd5;
-    7'b001xxxx: pivotIndex_wr = 'd4;
-    7'b0001xxx: pivotIndex_wr = 'd3;
-    7'b00001xx: pivotIndex_wr = 'd2;
-    7'b000001x: pivotIndex_wr = 'd1;
-    7'b0000001: pivotIndex_wr = 'd0;
-    default:
-    begin
-        pivotIndex_wr = 'd0;
-    end
+        7'b1xxxxxx:
+            pivotIndex_wr = 'd6;
+        7'b01xxxxx:
+            pivotIndex_wr = 'd5;
+        7'b001xxxx:
+            pivotIndex_wr = 'd4;
+        7'b0001xxx:
+            pivotIndex_wr = 'd3;
+        7'b00001xx:
+            pivotIndex_wr = 'd2;
+        7'b000001x:
+            pivotIndex_wr = 'd1;
+        7'b0000001:
+            pivotIndex_wr = 'd0;
+        default:
+        begin
+            pivotIndex_wr = 'd0;
+        end
     endcase
 end
 
