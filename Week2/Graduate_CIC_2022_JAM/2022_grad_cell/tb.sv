@@ -1,17 +1,17 @@
 `timescale 1ns/10ps
-`define CYCLE      10.0  
+`define CYCLE      10.0
 `define SDFFILE    "./JAM_syn.sdf"
 `define End_CYCLE  10000000
-`define PAT        "cost_rom"
+`define P1        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/Graduate_CIC_2022_JAM/2022_grad_cell/cost_rom"
 
 `ifdef P1
-    `define PAT_NUM 1 
+    `define PAT_NUM 1
 `elsif P2
-    `define PAT_NUM 2 
+    `define PAT_NUM 2
 `elsif P3
-    `define PAT_NUM 3 
+    `define PAT_NUM 3
 `else
-    `define PAT_NUM 1 
+    `define PAT_NUM 1
 `endif
 
 
@@ -30,7 +30,7 @@ wire [2:0] W;
 wire [2:0] J;
 reg [6:0] Cost;
 wire [3:0] MatchCount;
-wire [8:0] MinCost;
+wire [9:0] MinCost;
 JAM u_JAM(.CLK(CLK),
         .RST(RST),
         .W(W),
@@ -46,11 +46,11 @@ JAM u_JAM(.CLK(CLK),
 
 always begin #(`CYCLE/2) CLK = ~CLK; end
 
-initial begin
-    $fsdbDumpfile("JAM.fsdb");
-    $fsdbDumpvars();
-    $fsdbDumpMDA;
-end
+// initial begin
+    // $fsdbDumpfile("JAM.fsdb");
+    // $fsdbDumpvars();
+    // $fsdbDumpMDA;
+// end
 
 //initial begin
 //    $dumpvars();
@@ -61,8 +61,8 @@ initial begin
     $display("*******************************");
     $display("** Simulation Start          **");
     $display("*******************************");
-    @(posedge CLK);  #2 RST = 1'b1; 
-    #(`CYCLE*2);  
+    @(posedge CLK);  #2 RST = 1'b1;
+    #(`CYCLE*2);
     @(posedge CLK);  #2  RST = 1'b0;
 end
 
@@ -89,7 +89,7 @@ reg [3:0] goldMatchCount;
 reg [8:0] goldMinCost;
 
 initial begin
-    fd = $fopen(`PAT,"r");
+    fd = $fopen(`P1,"r");
     if (fd == 0) begin
         $display ("pattern handle null");
         $finish;
@@ -104,18 +104,18 @@ initial begin
                     if(patnum == `PAT_NUM) begin
                         $display("PATTERN: %3d",patnum);
                     end
-             end 
+             end
              else begin
                  if(patnum == `PAT_NUM) begin
                      freturn = $sscanf(line,"%s %d",key,key_value);
                      if(key == "min_cost") begin
                          //$display ("%s: %3d",key,key_value);
                          goldMinCost = key_value;
-                     end 
+                     end
                      else if(key == "match_count") begin
                          //$display ("%s: %3d",key,key_value);
                          goldMatchCount = key_value;
-                     end 
+                     end
                      else  begin
                          freturn = $sscanf(line,"%d %d %d %d %d %d %d %d",v0,v1,v2,v3,v4,v5,v6,v7);
                          if (freturn == 0 ) $display("unknow line: -%s-",line);
@@ -191,4 +191,3 @@ always @(posedge CLK ) begin
     end
 end
 endmodule
-
