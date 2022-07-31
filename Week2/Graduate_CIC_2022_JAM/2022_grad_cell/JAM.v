@@ -264,19 +264,26 @@ begin
     end
 end
 //localMincostReg
+reg[9:0] localMincostReg_wr,localMincostReg_rd;
+
+always @(posedge CLK)
+begin
+    localMincostReg_rd <=  RST ? 'd0 : localMincostReg_wr;
+end
+
 always @(posedge CLK)
 begin
     if(RST)
     begin
-        localMincostReg <= 'd0;
+        localMincostReg_wr = 'd0;
     end
     else if(minCostCalculationDone_flag)
     begin
-        localMincostReg <= 'd0;
+        localMincostReg_wr = 'd0;
     end
     else
     begin
-        localMincostReg <= localMincostReg + Cost;
+        localMincostReg_wr = localMincostReg_rd + Cost;
     end
 end
 
@@ -290,7 +297,7 @@ begin
     end
     else if(minCostCalculationDone_flag)
     begin
-        minCostReg_o <= MinCost_lt_localMinCost_flag ? localMincostReg : minCostReg_o ;
+        minCostReg_o <= MinCost_lt_localMinCost_flag ? localMincostReg_wr : minCostReg_o ;
     end
     else
     begin
@@ -300,7 +307,8 @@ end
 
 //matchCountReg_o
 wire MinCost_eq_localMinCost_flag = minCostCalculationDone_flag ? (minCostReg_o == localMincostReg) : 'dz;
-wire MinCost_lt_localMinCost_flag = minCostCalculationDone_flag ? (localMincostReg < minCostReg_o) : 'dz; ;
+wire MinCost_lt_localMinCost_flag = minCostCalculationDone_flag ? (localMincostReg < minCostReg_o) : 'dz;
+
 always @(posedge CLK)
 begin
     if(RST)

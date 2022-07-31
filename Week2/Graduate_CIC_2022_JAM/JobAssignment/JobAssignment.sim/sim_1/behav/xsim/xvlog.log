@@ -1,4 +1,0 @@
-INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/Graduate_CIC_2022_JAM/2022_grad_cell/JAM.v" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module JAM
-WARNING: [VRFC 10-2292] extra semicolon is not allowed here in this dialect. Use SystemVerilog mode [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/Graduate_CIC_2022_JAM/2022_grad_cell/JAM.v:303]
-WARNING: [VRFC 10-3380] identifier 'MinCost_lt_localMinCost_flag' is used before its declaration [C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week2/Graduate_CIC_2022_JAM/2022_grad_cell/JAM.v:293]
