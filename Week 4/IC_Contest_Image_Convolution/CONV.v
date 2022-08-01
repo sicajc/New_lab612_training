@@ -558,6 +558,7 @@ begin
 end
 
 wire[DATA_WIDTH-1:0] ReLU_Result_wr;
+wire signed[2*DATA_WIDTH-1:0] kernal0_MultiplicationResult = kernal0_Value * ConvLocalOffsetPixelValue_i;
 
 //R1_wr
 always @(*)
@@ -565,7 +566,7 @@ begin
     case(currentState)
         L0_ZEROPAD_CONV:
         begin
-            R1_wr = R1_rd + kernal0_Value * ConvLocalOffsetPixelValue_i;
+            R1_wr = R1_rd + kernal0_MultiplicationResult[];
         end
         L0_K0_BIAS_RELU,L0_K1_BIAS_RELU:
         begin
@@ -656,7 +657,7 @@ begin
 end
 
 //ReLU bias datapath
-wire[DATA_WIDTH-1:0] biasedResult;
+wire signed[DATA_WIDTH-1:0] biasedResult;
 
 assign ReLU_Result_wr = (biasedResult > 0) ? biasedResult : 'd0;
 assign biasedResult   = K0_K1_localConvolutionResult_rd + BIAS;

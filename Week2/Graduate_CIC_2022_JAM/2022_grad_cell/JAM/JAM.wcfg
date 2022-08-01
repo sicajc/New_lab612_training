@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="testfixture_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="testfixture" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="342.601 ns"></ZoomEndTime>
+      <Cursor1Time time="1,000.000 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="352"></NameColumnWidth>
+      <ValueColumnWidth column_width="222"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="10" />
+   <wave_markers>
+      <marker time="37000" label="" />
+      <marker time="110000" label="" />
+      <marker time="4055000" label="" />
+      <marker time="4095000" label="" />
+      <marker time="195000" label="" />
+      <marker time="274933" label="" />
+      <marker time="3628655000" label="" />
+      <marker time="3628565000" label="" />
+   </wave_markers>
+   <wvobject fp_name="/testfixture/u_JAM/CLK" type="logic">
+      <obj_property name="ElementShortName">CLK</obj_property>
+      <obj_property name="ObjectShortName">CLK</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_JAM/RST" type="logic">
+      <obj_property name="ElementShortName">RST</obj_property>
+      <obj_property name="ObjectShortName">RST</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_JAM/jobTempSequenceReg" type="array">
+      <obj_property name="ElementShortName">jobTempSequenceReg[0:7][2:0]</obj_property>
+      <obj_property name="ObjectShortName">jobTempSequenceReg[0:7][2:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="Reversed">false</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testfixture/u_JAM/jobSequenceReg" type="array">
+      <obj_property name="ElementShortName">jobSequenceReg[0:7][2:0]</obj_property>
+      <obj_property name="ObjectShortName">jobSequenceReg[0:7][2:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="group84" type="group">
+      <obj_property name="label">I/O</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_JAM/W" type="array">
+         <obj_property name="ElementShortName">W[2:0]</obj_property>
+         <obj_property name="ObjectShortName">W[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/J" type="array">
+         <obj_property name="ElementShortName">J[2:0]</obj_property>
+         <obj_property name="ObjectShortName">J[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/Cost" type="array">
+         <obj_property name="ElementShortName">Cost[6:0]</obj_property>
+         <obj_property name="ObjectShortName">Cost[6:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/MatchCount" type="array">
+         <obj_property name="ElementShortName">MatchCount[3:0]</obj_property>
+         <obj_property name="ObjectShortName">MatchCount[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/MinCost" type="array">
+         <obj_property name="ElementShortName">MinCost[9:0]</obj_property>
+         <obj_property name="ObjectShortName">MinCost[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/Valid" type="logic">
+         <obj_property name="ElementShortName">Valid</obj_property>
+         <obj_property name="ObjectShortName">Valid</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group89" type="group">
+      <obj_property name="label">FIND_PIVOT</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_JAM/STATE_FIND_PIVOT" type="logic">
+         <obj_property name="ElementShortName">STATE_FIND_PIVOT</obj_property>
+         <obj_property name="ObjectShortName">STATE_FIND_PIVOT</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/localStatesCnt" type="array">
+         <obj_property name="ElementShortName">localStatesCnt[2:0]</obj_property>
+         <obj_property name="ObjectShortName">localStatesCnt[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/findPivotDone_flag" type="logic">
+         <obj_property name="ElementShortName">findPivotDone_flag</obj_property>
+         <obj_property name="ObjectShortName">findPivotDone_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/pivotIndex_wr" type="array">
+         <obj_property name="ElementShortName">pivotIndex_wr[2:0]</obj_property>
+         <obj_property name="ObjectShortName">pivotIndex_wr[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/findPivotLocationBitStream" type="array">
+         <obj_property name="ElementShortName">findPivotLocationBitStream[6:0]</obj_property>
+         <obj_property name="ObjectShortName">findPivotLocationBitStream[6:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/jobSequenceReg" type="array">
+         <obj_property name="ElementShortName">jobSequenceReg[0:7][2:0]</obj_property>
+         <obj_property name="ObjectShortName">jobSequenceReg[0:7][2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group88" type="group">
+      <obj_property name="label">SWITCH_PIVOT_MAX</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/testfixture/u_JAM/STATE_SWITCH_PIVOT_MIN" type="logic">
+         <obj_property name="ElementShortName">STATE_SWITCH_PIVOT_MIN</obj_property>
+         <obj_property name="ObjectShortName">STATE_SWITCH_PIVOT_MIN</obj_property>
+      </wvobject>
+      <wvobject fp_name="group117" type="group">
+         <obj_property name="label">Pivot</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/testfixture/u_JAM/pivotIndexReg" type="array">
+            <obj_property name="ElementShortName">pivotIndexReg[3:0]</obj_property>
+            <obj_property name="ObjectShortName">pivotIndexReg[3:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_JAM/pivotValue" type="array">
+            <obj_property name="ElementShortName">pivotValue[2:0]</obj_property>
+            <obj_property name="ObjectShortName">pivotValue[2:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group115" type="group">
+         <obj_property name="label">headPTR</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/testfixture/u_JAM/headPTR" type="array">
+            <obj_property name="ElementShortName">headPTR[2:0]</obj_property>
+            <obj_property name="ObjectShortName">headPTR[2:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_JAM/headPTRValue" type="array">
+            <obj_property name="ElementShortName">headPTRValue[2:0]</obj_property>
+            <obj_property name="ObjectShortName">headPTRValue[2:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group116" type="group">
+         <obj_property name="label">TailPTR</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/testfixture/u_JAM/tailPTR" type="array">
+            <obj_property name="ElementShortName">tailPTR[2:0]</obj_property>
+            <obj_property name="ObjectShortName">tailPTR[2:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/testfixture/u_JAM/tailPTRValue" type="array">
+            <obj_property name="ElementShortName">tailPTRValue[2:0]</obj_property>
+            <obj_property name="ObjectShortName">tailPTRValue[2:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/compareTailPTRValue_gt_flag" type="logic">
+         <obj_property name="ElementShortName">compareTailPTRValue_gt_flag</obj_property>
+         <obj_property name="ObjectShortName">compareTailPTRValue_gt_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/compareHeadPTRValue_gt_flag" type="logic">
+         <obj_property name="ElementShortName">compareHeadPTRValue_gt_flag</obj_property>
+         <obj_property name="ObjectShortName">compareHeadPTRValue_gt_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/headPTRValue_gt_tailPTR_flag" type="logic">
+         <obj_property name="ElementShortName">headPTRValue_gt_tailPTR_flag</obj_property>
+         <obj_property name="ObjectShortName">headPTRValue_gt_tailPTR_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/sequenceTraversed_flag" type="logic">
+         <obj_property name="ElementShortName">sequenceTraversed_flag</obj_property>
+         <obj_property name="ObjectShortName">sequenceTraversed_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/switchPivotDone_flag" type="logic">
+         <obj_property name="ElementShortName">switchPivotDone_flag</obj_property>
+         <obj_property name="ObjectShortName">switchPivotDone_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/jobTempSequenceReg" type="array">
+         <obj_property name="ElementShortName">jobTempSequenceReg[0:7][2:0]</obj_property>
+         <obj_property name="ObjectShortName">jobTempSequenceReg[0:7][2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group96" type="group">
+      <obj_property name="label">FLIP</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_JAM/STATE_FLIP" type="logic">
+         <obj_property name="ElementShortName">STATE_FLIP</obj_property>
+         <obj_property name="ObjectShortName">STATE_FLIP</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/jobTempSequenceReg" type="array">
+         <obj_property name="ElementShortName">jobTempSequenceReg[0:7][2:0]</obj_property>
+         <obj_property name="ObjectShortName">jobTempSequenceReg[0:7][2:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group85" type="group">
+      <obj_property name="label">MinCostCalculation</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/testfixture/u_JAM/workIndexCnt" type="array">
+         <obj_property name="ElementShortName">workIndexCnt[3:0]</obj_property>
+         <obj_property name="ObjectShortName">workIndexCnt[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/permutationCnt" type="array">
+         <obj_property name="ElementShortName">permutationCnt[15:0]</obj_property>
+         <obj_property name="ObjectShortName">permutationCnt[15:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/allPermutationFound_flag" type="logic">
+         <obj_property name="ElementShortName">allPermutationFound_flag</obj_property>
+         <obj_property name="ObjectShortName">allPermutationFound_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/minCostCalculationDone_flag" type="logic">
+         <obj_property name="ElementShortName">minCostCalculationDone_flag</obj_property>
+         <obj_property name="ObjectShortName">minCostCalculationDone_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/minCostReg_o" type="array">
+         <obj_property name="ElementShortName">minCostReg_o[9:0]</obj_property>
+         <obj_property name="ObjectShortName">minCostReg_o[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/matchCountReg_o" type="array">
+         <obj_property name="ElementShortName">matchCountReg_o[3:0]</obj_property>
+         <obj_property name="ObjectShortName">matchCountReg_o[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/startMinCostCalculation_flag" type="logic">
+         <obj_property name="ElementShortName">startMinCostCalculation_flag</obj_property>
+         <obj_property name="ObjectShortName">startMinCostCalculation_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/MinCost_eq_localMinCost_flag" type="logic">
+         <obj_property name="ElementShortName">MinCost_eq_localMinCost_flag</obj_property>
+         <obj_property name="ObjectShortName">MinCost_eq_localMinCost_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/localMinCost_lt_MinCost_flag" type="logic">
+         <obj_property name="ElementShortName">localMinCost_lt_MinCost_flag</obj_property>
+         <obj_property name="ObjectShortName">localMinCost_lt_MinCost_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/localMincostReg_wr" type="array">
+         <obj_property name="ElementShortName">localMincostReg_wr[9:0]</obj_property>
+         <obj_property name="ObjectShortName">localMincostReg_wr[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/localMincostReg_rd" type="array">
+         <obj_property name="ElementShortName">localMincostReg_rd[9:0]</obj_property>
+         <obj_property name="ObjectShortName">localMincostReg_rd[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group103" type="group">
+      <obj_property name="label">STATES</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/testfixture/u_JAM/STATE_FIND_PIVOT" type="logic">
+         <obj_property name="ElementShortName">STATE_FIND_PIVOT</obj_property>
+         <obj_property name="ObjectShortName">STATE_FIND_PIVOT</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/STATE_SWITCH_PIVOT_MIN" type="logic">
+         <obj_property name="ElementShortName">STATE_SWITCH_PIVOT_MIN</obj_property>
+         <obj_property name="ObjectShortName">STATE_SWITCH_PIVOT_MIN</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/STATE_FLIP" type="logic">
+         <obj_property name="ElementShortName">STATE_FLIP</obj_property>
+         <obj_property name="ObjectShortName">STATE_FLIP</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/STATE_WB" type="logic">
+         <obj_property name="ElementShortName">STATE_WB</obj_property>
+         <obj_property name="ObjectShortName">STATE_WB</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/STATE_DONE" type="logic">
+         <obj_property name="ElementShortName">STATE_DONE</obj_property>
+         <obj_property name="ObjectShortName">STATE_DONE</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

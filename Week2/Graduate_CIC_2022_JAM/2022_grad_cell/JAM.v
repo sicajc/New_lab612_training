@@ -13,22 +13,25 @@ parameter MAX_COMBINATIONS = 40320;
 //States
 parameter FIND_PIVOT = 'd0;
 parameter SWITCH_PIVOT_MIN = 'd1;
-parameter FLIP = 'd2;
-parameter WB  =  'd3;
-parameter DONE = 'd4;
+parameter SWITCH_PIVOT_MIN_WB = 'd2;
+parameter FLIP = 'd3;
+parameter WB  =  'd4;
+parameter DONE = 'd5;
 
 //State Register
-reg[2:0] currentState,nextState;
+reg[3:0] currentState,nextState;
 
 //State indicator
-wire STATE_FIND_PIVOT               =     (  FIND_PIVOT         == currentState); //2 Cycles with 4 comparators
+wire STATE_FIND_PIVOT               =     (  FIND_PIVOT         == currentState); //2 Cycles
 wire STATE_SWITCH_PIVOT_MIN         =     (  SWITCH_PIVOT_MIN   == currentState); //4
+wire STATE_SWITCH_PIVOT_MIN_WB      =     ( SWITCH_PIVOT_MIN_WB == currentState); //1
 wire STATE_FLIP                     =     (  FLIP               == currentState); //1
+//No need to write back, combine it into WB mode
 wire STATE_WB                       =     (  WB                 == currentState); //1
 wire STATE_DONE                     =     (  DONE               == currentState);
 
 //CNTS
-reg[2:0] workIndexCnt;
+reg[3:0] workIndexCnt;
 reg[2:0] localStatesCnt;
 reg[15:0] permutationCnt;
 
@@ -37,21 +40,22 @@ reg[2:0] headPTR;
 reg[2:0] tailPTR;
 
 //Flags
-wire findPivotDone_flag   =   STATE_FIND_PIVOT ?       (localStatesCnt == 'd1) : 'd0;
-wire switchPivotDone_flag =   STATE_SWITCH_PIVOT_MIN ? (localStatesCnt == 'd3) : 'd0;
-wire allPermutationFound_flag = ( permutationCnt == (MAX_COMBINATIONS-1) );
-wire minCostCalculationDone_flag = (workIndexCnt == 'd7);
-wire sequenceTraversed_flag = STATE_SWITCH_PIVOT_MIN ? (headPTR == tailPTR) ||  (tailPTR == (headPTR+'d1)) : 'd0;
-wire switchPivotSet_flag = STATE_SWITCH_PIVOT_MIN && (localStatesCnt == 'd0);
-
+wire findPivotDone_flag             = STATE_FIND_PIVOT ?  (localStatesCnt == 'd1) : 'd0;
+wire switchPivotDone_flag           = STATE_SWITCH_PIVOT_MIN ? (localStatesCnt == 'd3) : 'd0 ;
+wire allPermutationFound_flag       = ( permutationCnt == (MAX_COMBINATIONS-1) );
+wire minCostCalculationDone_flag    = (workIndexCnt == 'd8);
+wire sequenceTraversed_flag         = (headPTR == tailPTR) ||  (tailPTR == (headPTR+'d1)) ;
+wire switchPivotSet_flag            = STATE_SWITCH_PIVOT_MIN && (localStatesCnt == 'd0);
+wire pivotValueNotChanged           = (tempMinValueReg == 'd8);
 
 //Registers
 reg[2:0] jobSequenceReg[0:7];
 reg[2:0] jobTempSequenceReg[0:7];
 reg[9:0] minCostReg_o;
 reg[3:0] matchCountReg_o;
-reg[9:0] localMincostReg;
 reg[3:0] pivotIndexReg;
+reg[3:0] tempMinValueReg;
+reg[3:0] tempPivotIndexReg;
 
 
 //CTR
@@ -70,7 +74,7 @@ begin
         FLIP:
             nextState = WB;
         WB:
-            nextState = FIND_PIVOT;
+            nextState = minCostCalculationDone_flag ? FIND_PIVOT : WB;
         default:
             nextState = FIND_PIVOT;
     endcase
@@ -106,7 +110,7 @@ end
 //permutationCnt
 always @(posedge CLK )
 begin
-    permutationCnt <= RST ? 'd0 : (STATE_WB ? permutationCnt + 'd1 : permutationCnt);
+    permutationCnt <= RST ? 'd0 : (minCostCalculationDone_flag ? permutationCnt + 'd1 : permutationCnt);
 end
 
 //PTRs
@@ -117,10 +121,15 @@ begin
         headPTR <= 'd0;
         tailPTR <= 'd7;
     end
+    else if(STATE_FIND_PIVOT)
+    begin
+        headPTR <= pivotIndexReg + 'd1;
+        tailPTR <= 'd7;
+    end
     else if(STATE_SWITCH_PIVOT_MIN)
     begin
-        headPTR <= switchPivotSet_flag ? pivotIndexReg + 'd1 : (sequenceTraversed_flag ? headPTR : headPTR + 'd1);
-        tailPTR <= switchPivotSet_flag ? 'd7 : (sequenceTraversed_flag ? tailPTR : tailPTR - 'd1);
+        headPTR <= (sequenceTraversed_flag ? headPTR : headPTR + 'd1);
+        tailPTR <= (sequenceTraversed_flag ? tailPTR : tailPTR - 'd1);
     end
     else
     begin
@@ -156,9 +165,8 @@ wire[2:0] pivotValue = jobTempSequenceReg[pivotIndexReg];
 wire[2:0] headPTRValue = jobTempSequenceReg[headPTR];
 wire[2:0] tailPTRValue = jobTempSequenceReg[tailPTR];
 
-wire compareTailPTRValue_gt_flag = tailPTRValue > pivotValue;
-wire compareHeadPTRValue_gt_flag = headPTRValue > pivotValue;
-wire headPTRValue_gt_tailPTR_flag = headPTRValue > tailPTRValue;
+wire compareTailPTRValue_gt_pivot_flag = tailPTRValue > pivotValue;
+wire compareHeadPTRValue_gt_pivot_flag = headPTRValue > pivotValue;
 
 always @(posedge CLK)
 begin
@@ -168,37 +176,10 @@ begin
         begin
             jobTempSequenceReg[i] <= i;
         end
-        else if(STATE_SWITCH_PIVOT_MIN)
+        else if(switchPivotDone_flag & !pivotValueNotChanged)
         begin
-            case({compareTailPTRValue_gt_flag,compareHeadPTRValue_gt_flag})
-                2'b11:
-                begin
-                    if(headPTRValue_gt_tailPTR_flag)
-                    begin
-                        jobTempSequenceReg[pivotIndexReg] <= headPTRValue;
-                        jobTempSequenceReg[headPTR]       <= headPTRValue;
-                        jobTempSequenceReg[tailPTR]       <= headPTRValue;
-                    end
-                    else
-                    begin
-                        jobTempSequenceReg[pivotIndexReg] <= tailPTRValue;
-                        jobTempSequenceReg[headPTR]       <= tailPTRValue;
-                        jobTempSequenceReg[tailPTR]       <= tailPTRValue;
-                    end
-                end
-                2'b10:
-                begin
-                    jobTempSequenceReg[pivotIndexReg] <= tailPTRValue;
-                    jobTempSequenceReg[tailPTR] <= pivotValue;
-                end
-                2'b01:
-                begin
-                    jobTempSequenceReg[pivotIndexReg] <= headPTRValue;
-                    jobTempSequenceReg[headPTR] <= pivotValue;
-                end
-                default:
-                    jobTempSequenceReg[pivotIndexReg] <= pivotValue;
-            endcase
+            jobTempSequenceReg[pivotIndexReg]     <= tempMinValueReg;
+            jobTempSequenceReg[tempPivotIndexReg] <= pivotValue;
         end
         else if(STATE_FLIP)
         begin
@@ -263,7 +244,7 @@ begin
         end
     end
 end
-//localMincostReg
+//localMincostReg_rd
 reg[9:0] localMincostReg_wr,localMincostReg_rd;
 
 always @(posedge CLK)
@@ -271,7 +252,7 @@ begin
     localMincostReg_rd <=  RST ? 'd0 : localMincostReg_wr;
 end
 
-always @(posedge CLK)
+always @(*)
 begin
     if(RST)
     begin
@@ -289,7 +270,7 @@ end
 
 wire startMinCostCalculation_flag = (workIndexCnt == 'd0);
 //minCostReg_o
-always @(negedge CLK)
+always @(posedge CLK)
 begin
     if(RST)
     begin
@@ -297,7 +278,7 @@ begin
     end
     else if(minCostCalculationDone_flag)
     begin
-        minCostReg_o <= MinCost_lt_localMinCost_flag ? localMincostReg_wr : minCostReg_o ;
+        minCostReg_o <= localMinCost_lt_MinCost_flag ? localMincostReg_rd : minCostReg_o ;
     end
     else
     begin
@@ -306,8 +287,9 @@ begin
 end
 
 //matchCountReg_o
-wire MinCost_eq_localMinCost_flag = minCostCalculationDone_flag ? (minCostReg_o == localMincostReg) : 'dz;
-wire MinCost_lt_localMinCost_flag = minCostCalculationDone_flag ? (localMincostReg < minCostReg_o) : 'dz;
+wire MinCost_eq_localMinCost_flag = minCostCalculationDone_flag ? (minCostReg_o == localMincostReg_rd) : 'dz;
+wire localMinCost_lt_MinCost_flag = minCostCalculationDone_flag ? (localMincostReg_rd < minCostReg_o) : 'dz;
+
 
 always @(posedge CLK)
 begin
@@ -318,7 +300,7 @@ begin
     else if(minCostCalculationDone_flag)
     begin
         matchCountReg_o <= MinCost_eq_localMinCost_flag ?  matchCountReg_o + 'd1 :
-                        (MinCost_lt_localMinCost_flag ? 'd0 : matchCountReg_o);
+                        (localMinCost_lt_MinCost_flag ? 'd0 : matchCountReg_o);
     end
     else
     begin
@@ -347,9 +329,10 @@ begin
         pivotIndexReg <= pivotIndexReg;
     end
 end
+
 //I/O
 assign W = workIndexCnt;
-assign J = jobSequenceReg[workIndexCnt];
+assign J = minCostCalculationDone_flag ?  'd0 : jobSequenceReg[workIndexCnt];
 assign MatchCount = matchCountReg_o;
 assign MinCost    = minCostReg_o;
 assign Valid = STATE_DONE;
@@ -393,6 +376,100 @@ end
 
 
 
+//tempMinValueReg,tempPivotIndexReg
+always @(posedge CLK)
+begin
+    if(RST)
+    begin
+        tempMinValueReg <= 'd8;
+        tempPivotIndexReg <= 'd8;
+    end
+    else if(STATE_FIND_PIVOT)
+    begin
+        tempMinValueReg <= 'd8;
+        tempPivotIndexReg <= pivotIndexReg;
+    end
+    else if(STATE_SWITCH_PIVOT_MIN)
+    begin
+        tempMinValueReg <= tempMinValue_wr;
+        tempPivotIndexReg <= tempIndex_wr;
+    end
+    else
+    begin
+        tempMinValueReg <= tempMinValueReg;
+        tempPivotIndexReg <= tempPivotIndexReg;
+    end
+end
 
+wire compareTailValue_lt_temp_flag = tailPTRValue < tempMinValueReg;
+wire compareHeadValue_lt_temp_flag = headPTRValue < tempMinValueReg;
+wire headPTRValue_lt_tailPTRValue_flag = headPTRValue < tailPTRValue;
+reg[3:0] tempMinValue_wr,tempIndex_wr;
 
+//tempMinValue_wr
+always @(*)
+begin
+    case({compareTailPTRValue_gt_pivot_flag,compareHeadPTRValue_gt_pivot_flag})
+        2'b11:
+        begin
+            if(headPTRValue_lt_tailPTRValue_flag)
+            begin
+                if(compareHeadValue_lt_temp_flag )
+                begin
+                    tempMinValue_wr = headPTRValue;
+                    tempIndex_wr      = headPTR;
+                end
+                else
+                begin
+                    tempMinValue_wr = tempMinValueReg;
+                    tempIndex_wr      = tempPivotIndexReg;
+                end
+            end
+            else
+            begin
+                if(compareTailValue_lt_temp_flag)
+                begin
+                    tempMinValue_wr = tailPTRValue;
+                    tempIndex_wr      = tailPTR;
+                end
+                else
+                begin
+                    tempMinValue_wr = tempMinValueReg;
+                    tempIndex_wr      = tempPivotIndexReg;
+                end
+            end
+        end
+        2'b10:
+        begin
+            if(compareTailValue_lt_temp_flag)
+            begin
+                tempMinValue_wr   = tailPTRValue;
+                tempIndex_wr      = tailPTR;
+            end
+            else
+            begin
+                tempMinValue_wr   = tempMinValueReg;
+                tempIndex_wr      = tempPivotIndexReg;
+            end
+        end
+        2'b01:
+        begin
+            if(compareHeadValue_lt_temp_flag)
+            begin
+                tempMinValue_wr = tailPTRValue;
+                tempIndex_wr      = tailPTR;
+            end
+            else
+            begin
+                tempMinValue_wr = tempMinValueReg;
+                tempIndex_wr      = tempPivotIndexReg;
+            end
+        end
+        default:
+        begin
+            tempMinValue_wr = tempMinValueReg;
+            tempIndex_wr      = tempPivotIndexReg;
+        end
+    endcase
+end
 endmodule
