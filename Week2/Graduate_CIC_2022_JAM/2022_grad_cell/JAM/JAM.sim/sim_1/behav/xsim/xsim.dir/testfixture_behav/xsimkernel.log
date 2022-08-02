@@ -2,3 +2,6 @@ Running: xsim.dir/testfixture_behav/xsimk.exe -simmode gui -wdb testfixture_beha
 Design successfully loaded
 Design Loading Memory Usage: 6840 KB (Peak: 6840 KB)
 Design Loading CPU Usage: 15 ms
+Simulation completed
+Simulation Memory Usage: 8884 KB (Peak: 8884 KB)
+Simulation CPU Usage: 77 ms

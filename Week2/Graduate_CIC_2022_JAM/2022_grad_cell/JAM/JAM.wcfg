@@ -12,12 +12,12 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="342.601 ns"></ZoomEndTime>
-      <Cursor1Time time="1,000.000 ns"></Cursor1Time>
+      <ZoomEndTime time="343.601 ns"></ZoomEndTime>
+      <Cursor1Time time="5.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="352"></NameColumnWidth>
-      <ValueColumnWidth column_width="222"></ValueColumnWidth>
+      <ValueColumnWidth column_width="217"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="10" />
    <wave_markers>
@@ -167,18 +167,6 @@
             <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
       </wvobject>
-      <wvobject fp_name="/testfixture/u_JAM/compareTailPTRValue_gt_flag" type="logic">
-         <obj_property name="ElementShortName">compareTailPTRValue_gt_flag</obj_property>
-         <obj_property name="ObjectShortName">compareTailPTRValue_gt_flag</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testfixture/u_JAM/compareHeadPTRValue_gt_flag" type="logic">
-         <obj_property name="ElementShortName">compareHeadPTRValue_gt_flag</obj_property>
-         <obj_property name="ObjectShortName">compareHeadPTRValue_gt_flag</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testfixture/u_JAM/headPTRValue_gt_tailPTR_flag" type="logic">
-         <obj_property name="ElementShortName">headPTRValue_gt_tailPTR_flag</obj_property>
-         <obj_property name="ObjectShortName">headPTRValue_gt_tailPTR_flag</obj_property>
-      </wvobject>
       <wvobject fp_name="/testfixture/u_JAM/sequenceTraversed_flag" type="logic">
          <obj_property name="ElementShortName">sequenceTraversed_flag</obj_property>
          <obj_property name="ObjectShortName">sequenceTraversed_flag</obj_property>
@@ -191,6 +179,14 @@
          <obj_property name="ElementShortName">jobTempSequenceReg[0:7][2:0]</obj_property>
          <obj_property name="ObjectShortName">jobTempSequenceReg[0:7][2:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/tempMinValueReg" type="array">
+         <obj_property name="ElementShortName">tempMinValueReg[3:0]</obj_property>
+         <obj_property name="ObjectShortName">tempMinValueReg[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testfixture/u_JAM/tempPivotIndexReg" type="array">
+         <obj_property name="ElementShortName">tempPivotIndexReg[3:0]</obj_property>
+         <obj_property name="ObjectShortName">tempPivotIndexReg[3:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group96" type="group">
