@@ -358,7 +358,7 @@ begin
     begin
         R1_wr = MP_PixelValue_i;
     end
-    else if(FLATTEN)
+    else if(STATE_FLATTEN)
     begin
         R1_wr = flatten_PixelValue_i;
     end
@@ -426,7 +426,7 @@ begin
         ComparatorIN1 = biased_Result;
         ComparatorIN2 = 'd0;
     end
-    else if(MAXPOOLING)
+    else if(STATE_MAXPOOLING)
     begin
         ComparatorIN1 = MP_PixelValue_i;
         ComparatorIN2 = MP_Result_rd;
