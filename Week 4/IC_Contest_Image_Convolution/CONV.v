@@ -103,15 +103,6 @@ wire L1_done_flag = K1_mode && MaxPoolingDone_flag;
 wire FlattenDone_flag = (sharedCnt1 == L1_MEM_SIZE - 1);
 wire L2_Done_flag = K1_mode && FlattenDone_flag;
 
-//Regiseter
-reg[DATA_WIDTH-1:0] R1_rd;
-reg[DATA_WIDTH-1:0] R1_wr;
-wire[DATA_WIDTH-1:0] MP_Result_rd = R1_rd;
-wire[DATA_WIDTH-1:0] ReLU_Result_rd = R1_rd;
-wire[DATA_WIDTH-1:0] Conv_Result_rd = R1_rd;
-wire[DATA_WIDTH-1:0] Flatten_temp_rd = R1_rd;
-
-
 //KERNAL0 VALUES
 parameter KERNAL0_00 = 20'h0a89e;
 parameter KERNAL0_01 = 20'h092d5;
@@ -319,8 +310,132 @@ wire WriteMem = STATE_L0_WB || STATE_L1_WB || STATE_L2_WB;
 assign cwr = WriteMem ? 1 : 0;
 
 //----------------------------------DATAPATH------------------------------------//
+//Using 1 multiplier, 1 adder, 1 comparator and 1 register
+//Regiseter
+reg[DATA_WIDTH-1:0] R1_rd;
+reg[DATA_WIDTH-1:0] R1_wr;
+
+wire signed[DATA_WIDTH-1:0] SerialMultiplierIN1;
+wire signed[DATA_WIDTH-1:0] SerialMultiplierIN2;
+reg signed[DATA_WIDTH-1:0] kernal_input;
+wire signed[2*DATA_WIDTH-1:0] SerialMultiplierOUT = SerialMultiplierIN1 * SerialMultiplierIN2;
 
 
+reg signed[DATA_WIDTH-1:0] AdderIN1;
+reg signed[DATA_WIDTH-1:0] AdderIN2;
+wire signed[DATA_WIDTH-1:0] AdderOUT = AdderIN1 + AdderIN2;
 
+reg signed[DATA_WIDTH-1:0] ComparatorIN1;
+reg signed[DATA_WIDTH-1:0] ComparatorIN2;
+wire signed[DATA_WIDTH-1:0] Comparator_gt = ComparatorIN1 > ComparatorIN2;
+
+wire[DATA_WIDTH-1:0] ReLU_Result_wr = Comparator_gt ? biased_Result : 'd0;
+wire[DATA_WIDTH-1:0] biased_Result = AdderOUT;
+wire[DATA_WIDTH-1:0] MP_Result_wr  = Comparator_gt ? MP_PixelValue_i : MP_Result_rd;
+
+wire[DATA_WIDTH-1:0] MP_Result_rd = R1_rd;
+wire[DATA_WIDTH-1:0] ReLU_Result_rd = R1_rd;
+wire[DATA_WIDTH-1:0] Conv_Result_rd = R1_rd;
+wire[DATA_WIDTH-1:0] Flatten_temp_rd = R1_rd;
+
+//1 Register
+always @(posedge clk or negedge reset)
+begin
+    R1_rd <= reset ? 'd0 : R1_wr;
+end
+
+always @(*)
+begin
+    if(STATE_CONV)
+    begin
+        R1_wr = AdderOUT;
+    end
+    else if(STATE_ReLU)
+    begin
+        R1_wr = ReLU_Result_wr;
+    end
+    else if(STATE_MAXPOOLING)
+    begin
+        R1_wr = MP_PixelValue_i;
+    end
+    else if(FLATTEN)
+    begin
+        R1_wr = flatten_PixelValue_i;
+    end
+    else
+    begin
+        R1_wr = R1_rd;
+    end
+end
+
+//Multiplier
+assign SerialMultiplierIN2 = kernal_input;
+assign SerialMultiplierIN1 = ZeroPad_flag ? 'd0 : idata;
+
+always @(*)
+begin
+    case(sharedCnt1)
+        'd0:
+            kernal_input = K0_mode ? KERNAL0_00 : KERNAL1_00;
+        'd1:
+            kernal_input = K0_mode ? KERNAL0_01 : KERNAL1_01;
+        'd2:
+            kernal_input = K0_mode ? KERNAL0_02 : KERNAL1_02;
+        'd3:
+            kernal_input = K0_mode ? KERNAL0_10 : KERNAL1_10;
+        'd4:
+            kernal_input = K0_mode ? KERNAL0_11 : KERNAL1_11;
+        'd5:
+            kernal_input = K0_mode ? KERNAL0_12 : KERNAL1_12;
+        'd6:
+            kernal_input = K0_mode ? KERNAL0_20 : KERNAL1_20;
+        'd7:
+            kernal_input = K0_mode ? KERNAL0_21 : KERNAL1_21;
+        'd8:
+            kernal_input = K0_mode ? KERNAL0_22 : KERNAL1_22;
+        default:
+            kernal_input = 'd0 ;
+    endcase
+end
+
+//Adder
+always @(*)
+begin
+    if(STATE_CONV)
+    begin
+       AdderIN1 = Conv_Result_rd;
+       AdderIN2 = SerialMultiplierOUT[35:16];
+    end
+    else if(STATE_ReLU)
+    begin
+       AdderIN1 = Conv_Result_rd;
+       AdderIN2 = BIAS;
+    end
+    else
+    begin
+       AdderIN1 = 'd0;
+       AdderIN2 = 'd0;
+    end
+end
+
+//Comparator Input
+always @(*)
+begin
+    if(STATE_ReLU)
+    begin
+        ComparatorIN1 = biased_Result;
+        ComparatorIN2 = 'd0;
+    end
+    else if(MAXPOOLING)
+    begin
+        ComparatorIN1 = MP_PixelValue_i;
+        ComparatorIN2 = MP_Result_rd;
+    end
+    else
+    begin
+        ComparatorIN1 = 'd0;
+        ComparatorIN2 = 'd0;
+    end
+end
 
 endmodule
