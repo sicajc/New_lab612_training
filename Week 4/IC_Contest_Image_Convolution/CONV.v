@@ -87,9 +87,9 @@ reg[PTR_LENGTH-1:0] imgOffsetColPTR,imgOffsetRowPTR;
 //Flags
 wire ZeroPad_flag = imgOffsetColPTR == 'd0 || imgOffsetRowPTR == 'd0 || imgOffsetRowPTR == 'd65 || imgOffsetColPTR == 'd65 ;
 wire LocalConvDone_flag = (sharedCnt1 == 'd8);
-wire ImgRightBoundReach_flag = imgOffsetColPTR == IMAGE_WIDTH_HEIGHT;
+wire CONV_ImgRightBoundReach_flag = imgOffsetColPTR == IMAGE_WIDTH_HEIGHT;
 wire ImgBottomBoundReach_flag = imgOffsetRowPTR == IMAGE_WIDTH_HEIGHT;
-wire ConvDone_flag = (ImgRightBoundReach_flag && ImgBottomBoundReach_flag);
+wire ConvDone_flag = (CONV_ImgRightBoundReach_flag && ImgBottomBoundReach_flag);
 wire L0_Done_flag = K1_mode && ConvDone_flag;
 
 
@@ -97,7 +97,7 @@ wire MP_ImgRightBoundReach_flag = (imgColPTR == IMAGE_WIDTH_HEIGHT - 1);
 wire MP_ImgBottomBoundReach_flag = (imgRowPTR == IMAGE_WIDTH_HEIGHT - 1);
 wire LocalMaxPoolingDone_flag = (sharedCnt1 == 'd3);
 wire MaxPoolingDone_flag = MP_ImgBottomBoundReach_flag && MP_ImgRightBoundReach_flag;
-wire L1_done_flag = K1_mode && MaxPoolingDone_flag;
+wire L1_Done_flag = K1_mode && MaxPoolingDone_flag;
 
 
 wire FlattenDone_flag = (sharedCnt1 == L1_MEM_SIZE - 1);
@@ -152,7 +152,7 @@ begin
         MAXPOOLING:
             nextState = MaxPoolingDone_flag ? L1_WB : MAXPOOLING;
         L1_WB:
-            nextState = L1_done_flag ? FLATTEN : MAXPOOLING;
+            nextState = L1_Done_flag ? FLATTEN : MAXPOOLING;
         FLATTEN:
             nextState = L2_WB;
         L2_WB:
@@ -160,6 +160,129 @@ begin
         DONE:
             nextState = DONE;
     endcase
+end
+
+//IMGColPTR,IMGROWPTR
+wire[PTR_LENGTH-1:0] L0_ColPTR_action = (ConvDone_flag ? 'd1 : (CONV_ImgRightBoundReach_flag ? 'd1 : imgColPTR + 'd1) );
+wire[PTR_LENGTH-1:0] L0_RowPTR_action = (ConvDone_flag ? 'd1 : (CONV_ImgRightBoundReach_flag ? imgRowPTR + 'd1 : imgRowPTR));
+
+wire[PTR_LENGTH-1:0] L1_ColPTR_action = (MaxPoolingDone_flag ? 'd0 : MP_ImgRightBoundReach_flag ? 'd0 : imgColPTR + 'd2);
+wire[PTR_LENGTH-1:0] L1_RowPTR_action = (MaxPoolingDone_flag ? 'd0 : MP_ImgBottomBoundReach_flag ? 'd0 : imgRowPTR + 'd2);
+always @(posedge clk or negedge reset)
+begin
+    if(reset)
+    begin
+        imgColPTR <= 'd1;
+        imgRowPTR <= 'd1;
+    end
+    else if(STATE_L0_WB)
+    begin
+        imgColPTR <= L0_Done_flag ? 'd0 : L0_ColPTR_action;
+        imgRowPTR <= L0_Done_flag ? 'd0 : L0_RowPTR_action;
+    end
+    else if(STATE_L1_WB)
+    begin
+        imgColPTR <= L1_Done_flag ? 'd0 : L1_ColPTR_action;
+        imgRowPTR <= L1_Done_flag ? 'd0 : L1_RowPTR_action;
+    end
+    else
+    begin
+        imgColPTR <=  imgColPTR;
+        imgRowPTR <=  imgRowPTR ;
+    end
+end
+
+//IMGoffsetPTR
+always @(*)
+begin
+    if(STATE_CONV)
+    begin
+        case(sharedCnt1)
+            'd0:
+            begin
+                imgOffsetColPTR = imgColPTR -'d1;
+                imgOffsetRowPTR = imgRowPTR -'d1;
+            end
+            'd1:
+            begin
+                imgOffsetColPTR = imgColPTR;
+                imgOffsetRowPTR = imgRowPTR - 'd1;
+            end
+            'd2:
+            begin
+                imgOffsetColPTR = imgColPTR + 'd1;
+                imgOffsetRowPTR = imgRowPTR - 'd1;
+            end
+            'd3:
+            begin
+                imgOffsetColPTR = imgColPTR - 'd1;
+                imgOffsetRowPTR = imgRowPTR;
+            end
+            'd4:
+            begin
+                imgOffsetColPTR = imgColPTR;
+                imgOffsetRowPTR = imgRowPTR;
+            end
+            'd5:
+            begin
+                imgOffsetColPTR = imgColPTR+'d1;
+                imgOffsetRowPTR = imgRowPTR;
+            end
+            'd6:
+            begin
+                imgOffsetColPTR = imgColPTR - 'd1;
+                imgOffsetRowPTR = imgRowPTR + 'd1;
+            end
+            'd7:
+            begin
+                imgOffsetColPTR = imgColPTR;
+                imgOffsetRowPTR = imgRowPTR + 'd1;
+            end
+            'd8:
+            begin
+                imgOffsetColPTR = imgColPTR + 'd1;
+                imgOffsetRowPTR = imgRowPTR + 'd1;
+            end
+        endcase
+    end
+    else if(STATE_MAXPOOLING)
+    begin
+        case(sharedCnt1)
+            'd0:
+            begin
+                imgOffsetColPTR = imgColPTR;
+                imgOffsetRowPTR = imgRowPTR;
+            end
+            'd1:
+            begin
+                imgOffsetColPTR = imgColPTR+'d1;
+                imgOffsetRowPTR = imgRowPTR;
+            end
+            'd2:
+            begin
+                imgOffsetColPTR = imgColPTR;
+                imgOffsetRowPTR = imgRowPTR+'d1;
+            end
+            'd3:
+            begin
+                imgOffsetColPTR = imgColPTR + 'd1;
+                imgOffsetRowPTR = imgRowPTR + 'd1;
+            end
+            default:
+            begin
+                imgOffsetColPTR = imgColPTR;
+                imgOffsetRowPTR = imgRowPTR;
+            end
+        endcase
+    end
+    else
+    begin
+
+        begin
+            imgOffsetColPTR = imgColPTR;
+            imgOffsetRowPTR = imgRowPTR;
+        end
+    end
 end
 
 //sharedCnt1
@@ -403,18 +526,18 @@ always @(*)
 begin
     if(STATE_CONV)
     begin
-       AdderIN1 = Conv_Result_rd;
-       AdderIN2 = SerialMultiplierOUT[35:16];
+        AdderIN1 = Conv_Result_rd;
+        AdderIN2 = SerialMultiplierOUT[35:16];
     end
     else if(STATE_ReLU)
     begin
-       AdderIN1 = Conv_Result_rd;
-       AdderIN2 = BIAS;
+        AdderIN1 = Conv_Result_rd;
+        AdderIN2 = BIAS;
     end
     else
     begin
-       AdderIN1 = 'd0;
-       AdderIN2 = 'd0;
+        AdderIN1 = 'd0;
+        AdderIN2 = 'd0;
     end
 end
 
