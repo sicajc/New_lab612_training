@@ -40,7 +40,7 @@ reg[PTR_LENGTH - 1 : 0] imgColOffsetPTR,imgRowOffsetPTR;
 //flags
 wire ImgRightBoundReach_flag  = (imgColPTR == IMG_WIDTH - 2) ;
 wire ImgBottomBoundReach_flag = (imgRowPTR == IMG_WIDTH - 2) ;
-wire Local_LBP_done_flag = (cnt == 'd7);
+wire Local_LBP_done_WB_flag = (cnt == 'd7);
 wire LBP_done_flag = ImgRightBoundReach_flag && ImgBottomBoundReach_flag ;
 
 
@@ -68,7 +68,7 @@ begin
         RD_PIXEL:
             nextState = LBP;
         LBP:
-            nextState = (Local_LBP_done_flag ? (LBP_done_flag ? DONE : RD_PIXEL) : LBP);
+            nextState = (Local_LBP_done_WB_flag ? (LBP_done_flag ? DONE : RD_PIXEL) : LBP);
         DONE:
             nextState = DONE;
         default:
@@ -85,8 +85,8 @@ begin
     end
     else if(STATE_LBP)
     begin
-        imgRowPTR <=Local_LBP_done_flag ? (ImgRightBoundReach_flag ? (imgRowPTR + 'd1):(imgRowPTR)) : (imgRowPTR) ;
-        imgColPTR <=Local_LBP_done_flag ? (ImgRightBoundReach_flag ? ('d1) : imgColPTR) : (imgColPTR + 'd1);
+        imgRowPTR <=Local_LBP_done_WB_flag ? (ImgRightBoundReach_flag ? (imgRowPTR + 'd1):(imgRowPTR)) : (imgRowPTR) ;
+        imgColPTR <=Local_LBP_done_WB_flag ? (ImgRightBoundReach_flag ? ('d1) : imgColPTR) : (imgColPTR + 'd1);
     end
     else
     begin
@@ -127,7 +127,7 @@ begin
     end
     else if(STATE_LBP && gray_ready)
     begin
-        cnt <= Local_LBP_done_flag ? 'd0 : (gray_ready ? (cnt + 'd1) : cnt);
+        cnt <= Local_LBP_done_WB_flag ? 'd0 : (gray_ready ? (cnt + 'd1) : cnt);
     end
     else
     begin
@@ -141,14 +141,14 @@ assign gray_addr = STATE_RD_PIXEL ?  {imgRowPTR,imgColPTR}: {imgRowOffsetPTR,img
 assign gray_req  = STATE_LBP;
 assign lbp_addr  = gray_addr;
 assign lbp_data  = lbp_temp_wr;
-assign lbp_valid = Local_LBP_done_flag ? 1 : 0;
+assign lbp_valid = Local_LBP_done_WB_flag;
 assign finish = STATE_DONE;
 
 
 //----------------------------DP------------------------//
 always @(posedge clk or posedge reset)
 begin
-    lbp_tempReg_rd <= reset ? 'd0 : ( Local_LBP_done_flag ?  'd0 : lbp_temp_wr);
+    lbp_tempReg_rd <= reset ? 'd0 : (Local_LBP_done_WB_flag ?  'd0 : lbp_temp_wr);
 end
 assign lbp_temp_wr = lbp_tempReg_rd + shift_weighted_result;
 
@@ -156,7 +156,6 @@ always @(posedge clk or posedge reset)
 begin
     centerPixelReg <= reset ? 'd0 : (STATE_RD_PIXEL ?  gray_data : centerPixelReg);
 end
-
 
 assign threshold_compared_gt = ( pixelValue_i >= centerPixelReg);
 assign local_threshold     =   threshold_compared_gt ? 1 : 0;
