@@ -38,7 +38,8 @@ parameter MP_KERNAL_SIZE = 'd3;
 parameter MP_IMG_RD_DONE = 1023;
 parameter DATA_WIDTH = 20;
 parameter ADDR_WIDTH = 12;
-parameter BIAS = 20'hF7295;
+parameter K0_BIAS = 20'h01310;
+parameter K1_BIAS = 20'hf7295;
 parameter PTR_LENGTH = 8;
 parameter L1_MEM_SIZE = 1024;
 
@@ -532,7 +533,7 @@ begin
     else if(STATE_ReLU)
     begin
         AdderIN1 = Conv_Result_rd;
-        AdderIN2 = BIAS;
+        AdderIN2 = K0_mode ? K0_BIAS : K1_BIAS;
     end
     else
     begin
@@ -546,11 +547,13 @@ always @(*)
 begin
     if(STATE_ReLU)
     begin
+        //ReLU check if greater than zero
         ComparatorIN1 = biased_Result;
         ComparatorIN2 = 'd0;
     end
     else if(STATE_MAXPOOLING)
     begin
+        //Find the max value in the local 4 pixels
         ComparatorIN1 = MP_PixelValue_i;
         ComparatorIN2 = MP_Result_rd;
     end
