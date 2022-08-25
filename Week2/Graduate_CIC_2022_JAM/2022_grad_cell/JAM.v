@@ -14,6 +14,7 @@ parameter MAX_COMBINATIONS = 40320;
 reg[2:0] workIndexCnt;
 reg[11:0] permutationCnt;
 
+
 //PTRs
 reg[2:0] headPTR;
 reg[2:0] tailPTR;

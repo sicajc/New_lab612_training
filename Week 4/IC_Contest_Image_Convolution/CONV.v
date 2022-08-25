@@ -342,9 +342,13 @@ wire[DATA_WIDTH-1:0] flatten_PixelValue_i;
 wire[ADDR_WIDTH-1:0] L2_WB_addr_o;
 
 //busy
-always @(posedge clk)
+always @(posedge clk or negedge reset)
 begin
-    if(reset || STATE_DONE)
+    if(reset)
+    begin
+        busy <= 'd0;
+    end
+    else if(STATE_DONE)
     begin
         busy <= 'd0;
     end

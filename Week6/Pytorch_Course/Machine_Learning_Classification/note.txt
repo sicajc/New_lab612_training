@@ -1,0 +1,9 @@
+Binary classification and multiclass classification and multilabel classfication 1 tag might have more than 1 label
+
+imagenet-1k has a thousand object classfication
+
+batch size usually use 32~ 32 works pretty well for a majority of problem.
+
+
+Architecture of classfication model:
+in_features determines number of types of inputs

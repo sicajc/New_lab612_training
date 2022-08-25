@@ -1,5 +1,0 @@
-Pytorch .io has lots of documentation about pytorch resourses.
-
-TensorsIntroduction
-Scalar,Vectors are usually in lower case
-Matrix and tensor are usually UPPER CASE
