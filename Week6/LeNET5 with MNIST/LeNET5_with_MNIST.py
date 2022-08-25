@@ -141,9 +141,9 @@ IMAGE_SIZE = 28
 NUMBER_OF_CLASS = len(class_names)
 print(NUMBER_OF_CLASS)
 
-model_0 = LeNET5_V0(input_shape=1,output_shape = NUMBER_OF_CLASS).to(device)
-writer.add_graph(model_0,img.reshap)
 
+print(img.shape)
+model_0 = LeNET5_V0(input_shape=1,output_shape = NUMBER_OF_CLASS).to(device)
 
 summary(model_0,input_size = [32,1,28,28]) #<- batch_size,channels,height,width
 
@@ -152,8 +152,8 @@ summary(model_0,input_size = [32,1,28,28]) #<- batch_size,channels,height,width
 #Build the function for training
 from tqdm.auto import tqdm
 
-NUM_EPOCHS = 5
-LR = 0.15
+NUM_EPOCHS = 50
+LR = 0.3
 loss_fn = nn.CrossEntropyLoss()
 
 #Creating empty loss to track values
@@ -164,8 +164,9 @@ test_loss_values = []
 epoch_count = []
 
 # Create training and testing loop
+step = 0
 for epoch in tqdm(range(NUM_EPOCHS)):
-    print(f"Epoch: {epoch}\n-------")
+    #print(f"Epoch: {epoch}\n-------")
     print(f"Current learning rate: {LR}")
     optimizer = torch.optim.SGD(params = model_0.parameters(),lr = LR)
     ### Training
@@ -196,8 +197,8 @@ for epoch in tqdm(range(NUM_EPOCHS)):
         optimizer.step()
 
         # Print out how many samples have been seen
-        if batch % 400 == 0:
-            print(f"Looked at {batch * len(X)}/{len(train_dataloader.dataset)} samples")
+        # if batch % 400 == 0:
+        #     print(f"Looked at {batch * len(X)}/{len(train_dataloader.dataset)} samples")
 
     # Divide total train loss by length of train dataloader (average loss per batch per epoch)
     train_loss /= len(train_dataloader)
@@ -222,6 +223,11 @@ for epoch in tqdm(range(NUM_EPOCHS)):
             # 3. Calculate accuracy (preds need to be same as y_true)
             test_accuracy += test_acc(test_pred,y)
 
+            writer.add_scalar('Test Loss',test_loss,global_step = step)
+            writer.add_scalar('Test Accuracy',test_accuracy,global_step =step)
+            step = step + 1
+            writer.close()
+
         # Calculations on test metrics need to happen inside torch.inference_mode()
         # Divide total test loss by length of test dataloader (per batch)
         test_loss     /= len(test_dataloader)
@@ -230,8 +236,8 @@ for epoch in tqdm(range(NUM_EPOCHS)):
         test_accuracy /= len(test_dataloader)
 
     ## Print out what's happening
-    # print(f"Train loss: {train_loss:.5f} | Train accuracy: {train_acccuracy*100:.2f}%\n")
-    # print(f"Test loss: {test_loss:.5f} | Test accuracy: {test_accuracy*100:.2f}%\n")
+    print(f"Train loss: {train_loss:.5f} | Train accuracy: {train_acccuracy*100:.2f}%\n")
+    print(f"Test loss: {test_loss:.5f} | Test accuracy: {test_accuracy*100:.2f}%\n")
 
     epoch_count.append(epoch)
     train_loss_values.append(loss.detach().to("cpu").numpy()) #<- must convert tensor back to numpy arr
@@ -240,15 +246,15 @@ for epoch in tqdm(range(NUM_EPOCHS)):
     train_acccuracy_values.append(train_acccuracy.detach().to("cpu").numpy())
     test_accuracy_values.append(test_accuracy.detach().to("cpu").numpy())
 
+
     #Adjust the Learning according to training result
-    if epoch == 10:
-        LR = 0.1
-    elif epoch == 20:
+    if test_accuracy > 0.95:
+        LR = 0.025
+    elif test_accuracy > 0.9:
         LR = 0.05
-    elif epoch>= 30:
-        LR = LR - 0.005
-    else:
-        LR = LR
+    elif test_accuracy > 0.8:
+        LR = 0.1
+
 
 
 #%%
@@ -310,13 +316,18 @@ plt.legend()
 
 # %%
 #Saving the model for later use
+from pathlib import Path
 
+#Create model directory
+MODEL_PATH = Path("models")
+MODEL_PATH.mkdir(parents = True,exist_ok=True)
+
+#Create model save path
+MODEL_NAME = "LeNET5_model_0.pth"
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
+
+#Save model state dict
+print(f"Saving model to:{MODEL_SAVE_PATH}")
+torch.save(obj = model_0.state_dict(), f = MODEL_SAVE_PATH)
 
 #%%
-
-
-
-
-writer.add_image()
-writer.add_scalar()
-writer.close()
