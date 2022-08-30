@@ -106,7 +106,6 @@ print(len(class_names))
     # ax.imshow(make_grid(images, 4).permute(1,2,0))
     # break
 
-
 #%%
 # Create VGG16
 #model = VGG16.VGG_net(in_channels=3,out_channels=len(class_names)).to(device)
@@ -160,6 +159,11 @@ optimizer = torch.optim.Adam(model.parameters(),
 lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size = 5,gamma = 0.75)
 
 #%%
+#Instead of training with lots of batches, lets train with 1 single test first for testability.
+
+
+
+
 
 # Start training with help from engine.py
 results = engine.train(model=model,
