@@ -9,6 +9,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from typing import Tuple, Dict, List
 import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader, Dataset
 
 def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
     """Finds the class folder names in a target directory.
@@ -35,7 +36,6 @@ def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
     # 3. Crearte a dictionary of index labels (computers prefer numerical rather than string labels)
     class_to_idx = {cls_name: i for i, cls_name in enumerate(classes)}
     return classes, class_to_idx
-
 
 class BirdDataSet(Dataset):
     # 2. Initialize with a targ_dir and transform (optional) parameter
@@ -73,33 +73,55 @@ class BirdDataSet(Dataset):
         class_name = self.paths[index].parent.stem #<- (c:/a/b/c).parent.stem = (c:/a/b).stem = b
         class_idx = self.class_to_idx[class_name] #<- select the idx from the class name
 
-        return class_name, class_idx
+        # Transform if necessary
+        if self.transform:
+            return self.transform(img), class_idx # return data, label (X, y)
+        else:
+            return img, class_idx # return data, label (X, y)
+
 #%%
 
 folder_path = "D:/archive"
 csv_file    = "birds.csv"
 
+#Playing with the dataSet
 # annotation = pd.read_csv(folder_path + "/birds.csv")
 # dataframe  = annotation[annotation["data set"] == "train"].reset_index()
 # paths = [pathlib.Path(folder_path + "/" + p) for p in dataframe["filepaths"]]
 #
 # frame = dataframe["filepaths"]
-
 # print()
 # class_name = paths[0].parent.stem
 # print(paths)
 
-train_set = BirdDataSet(csv_file,"train",folder_path)
+# Don't augment test data, only reshape
+data_transforms = transforms.Compose([
+    transforms.Resize((32, 32)),
+    transforms.ToTensor()
+])
 
-img = train_set.load_image(0)
 
-img.show()
+train_set = BirdDataSet(csv_file,"train",folder_path,data_transforms)
+test_set  = BirdDataSet(csv_file,"test",folder_path,data_transforms)
+valid_set = BirdDataSet(csv_file,"valid",folder_path,data_transforms)
+
+train_dataloader  =  DataLoader(test_set,batch_size=32,shuffle=True)
+test_dataloader   =  DataLoader(test_set,batch_size=32,shuffle=True)
+valid_dataloader  =  DataLoader(test_set,batch_size=32,shuffle=True)
+
+#Check the size of tensor and visualize data when going through every step to ensure
+#~bug free code
+
+img,label = next(iter(train_dataloader))
+
+print(f"img shape: {img.shape}")
+print(f"label shape:{label.shape}")
+
 
 #<- f ix class_to_idx
 # print(train_set.classes)
 # print(train_set.class_to_idx)
 
-"""
 #Exploring image data
 img,label = train_set[0][0],train_set[0][1]
 
@@ -119,5 +141,5 @@ plt.figure(figsize=(10, 7))
 plt.imshow(img.permute(1, 2, 0))
 plt.axis("off")
 plt.title(class_names[label], fontsize=14)
-"""
+
 # %%
