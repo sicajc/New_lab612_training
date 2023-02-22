@@ -1,166 +1,349 @@
 
 `timescale 1ns/10ps
+`define C2Q 5
 module LBP ( clk, reset, gray_addr, gray_req, gray_ready, gray_data, lbp_addr, lbp_valid, lbp_data, finish);
-input   	    clk;
-input   	    reset;
-output  [13:0] 	gray_addr;
-output         	gray_req;
-input   	    gray_ready;
-input   [7:0] 	gray_data;
-output  [13:0] 	lbp_addr;
-output  	    lbp_valid;
-output  [7:0] 	lbp_data;
-output  	    finish;
+input   	        clk;
+input   	        reset;
+output  reg[13:0] 	gray_addr;
+output  reg       	gray_req;
+input   	        gray_ready;
+input   [7:0] 	    gray_data;
+output  reg[13:0] 	lbp_addr;
+output  reg	        lbp_valid;
+output  reg[7:0] 	lbp_data;
+output  reg	        finish;
 //====================================================================//
-//CONSTANTS
-parameter PTR_LENGTH = 7;
-parameter DATA_WIDTH = 8;
-parameter ADDR_WIDTH = 14;
+//==================
+//  PARAMETERS
+//==================
+parameter BYTE = 8 ;
+parameter WORD = 8 ;
+parameter PTR_WIDTH = BYTE;
+parameter CNT_WIDTH = BYTE;
 parameter IMG_WIDTH = 128;
-//state registers, next state logic
-reg[1:0] currentState, nextState;
 
-//states
-parameter RD_PIXEL = 'd0;
-parameter LBP =  'd1;
-parameter DONE = 'd2;
+//==================
+//  stateS
+//==================
+//L1 FSM
+localparam IDLE                      = 6'b000001 ;
+localparam RD_CENTER                 = 6'b000010 ;
+localparam RD_SURROUND_PIXEL         = 6'b000100 ;
+localparam ACC                       = 6'b001000 ;
+localparam WB                        = 6'b010000 ;
+localparam DONE                      = 6'b100000 ;
 
-//states indicators
-wire STATE_RD_PIXEL  = currentState == RD_PIXEL;
-wire STATE_LBP       = currentState == LBP;
-wire STATE_DONE      = currentState == DONE;
+//================================
+//  MAIN CTR
+//================================
+reg [7:0] l1_curState,l1_nxtState;
 
-//cnt
-reg[3:0] cnt;
+//================================
+//  state_indicators
+//================================
+wire state_IDLE                          =  l1_curState [0];
+wire state_RD_CENTER                     =  l1_curState [1];
+wire state_RD_SURROUND_PIXEL             =  l1_curState [2];
+wire state_ACC                           =  l1_curState [3];
+wire state_WB                            =  l1_curState [4];
+wire state_DONE                          =  l1_curState [5];
 
-//PTRS
-reg[PTR_LENGTH - 1 : 0] imgColPTR,imgRowPTR;
-reg[PTR_LENGTH - 1 : 0] imgColOffsetPTR,imgRowOffsetPTR;
+//================================
+//  Image PTRS
+//================================
+reg[PTR_WIDTH-1:0] row_ptr;
+reg[PTR_WIDTH-1:0] col_ptr;
 
-//flags
-wire ImgRightBoundReach_flag  = (imgColPTR == IMG_WIDTH - 2) ;
-wire ImgBottomBoundReach_flag = (imgRowPTR == IMG_WIDTH - 2) ;
-wire Local_LBP_done_WB_flag = (cnt == 'd7);
-wire LBP_done_flag = ImgRightBoundReach_flag && ImgBottomBoundReach_flag ;
+//================================
+//  OFFSET PTRS
+//================================
+reg[PTR_WIDTH-1:0] offset_row;
+reg[PTR_WIDTH-1:0] offset_col;
+
+//================================
+//  OFFSET CNT
+//================================
+reg[PTR_WIDTH-1:0] offset_cnt;
+
+//================================
+//  LUT
+//================================
+reg[WORD-1:0] surrounding_pixel_value;
+
+//=======================================
+//  Registers
+//=======================================
+reg[WORD-1:0] acc_ff;
+reg[WORD-1:0] center_pixel_ff;
+reg[WORD-1:0] surrounding_pixel_ff;
+
+//================================
+//  CONTROL FLAGS
+//================================
+wire imgRightBoundReach_f = (col_ptr == (IMG_WIDTH-2));
+wire imgBottomBoundReach_f = (row_ptr == (IMG_WIDTH-2));
 
 
-//InterConnections
-wire signed[DATA_WIDTH-1:0] pixelValue_i;
-wire[DATA_WIDTH-1:0] shift_weighted_result;
-wire local_threshold;
-wire threshold_compared_gt;
-
-//Registers
-reg[DATA_WIDTH-1:0] lbp_tempReg_rd;
-reg signed[DATA_WIDTH-1:0] centerPixelReg;
-wire[DATA_WIDTH-1:0] lbp_temp_wr;
+wire acc_done_f = offset_cnt == 7;
+wire lbp_done_f = imgRightBoundReach_f && imgBottomBoundReach_f;
 
 
-//State register
+//================================================================
+//  MAIN DESIGN
+//================================================================
+//================================
+//  FSM
+//================================
 always @(posedge clk or posedge reset)
-begin
-    currentState <= reset ? RD_PIXEL : nextState;
+begin:L1_FSM
+    //synopsys_translate_off
+    #`C2Q;
+    //synopsys_translate_on
+    if(reset)
+    begin
+        l1_curState <=  IDLE;
+    end
+    else
+    begin
+        l1_curState <=  l1_nxtState;
+    end
 end
 
 always @(*)
-begin
-    case(currentState)
-        RD_PIXEL:
-            nextState = LBP;
-        LBP:
-            nextState = (Local_LBP_done_WB_flag ? (LBP_done_flag ? DONE : RD_PIXEL) : LBP);
+begin:L1_FSM_NXT
+    case(l1_curState)
+        IDLE:
+        begin
+            l1_nxtState =  gray_ready ?  RD_CENTER : IDLE;
+            finish = 0;
+        end
+        RD_CENTER:
+        begin
+            l1_nxtState = RD_SURROUND_PIXEL;
+            finish = 0;
+        end
+        RD_SURROUND_PIXEL:
+        begin
+            l1_nxtState = ACC;
+            finish = 0;
+        end
+        ACC:
+        begin
+            l1_nxtState = acc_done_f ? WB : RD_SURROUND_PIXEL ;
+            finish = 0;
+        end
+        WB:
+        begin
+            l1_nxtState = lbp_done_f ? DONE : RD_CENTER;
+            finish = 0;
+        end
         DONE:
-            nextState = DONE;
+        begin
+            l1_nxtState = IDLE;
+            finish = 1;
+        end
         default:
-            nextState = RD_PIXEL;
+        begin
+            l1_nxtState = IDLE;
+            finish = 0;
+        end
     endcase
 end
-
-//PTRs
-always @(posedge clk or posedge reset)
-begin
-    if(reset)
-    begin
-        {imgRowPTR,imgColPTR} <= {7'd1,7'd1};
-    end
-    else if(STATE_LBP)
-    begin
-        imgRowPTR <=Local_LBP_done_WB_flag ? (ImgRightBoundReach_flag ? (imgRowPTR + 'd1):(imgRowPTR)) : (imgRowPTR) ;
-        imgColPTR <=Local_LBP_done_WB_flag ? (ImgRightBoundReach_flag ? ('d1) : imgColPTR) : (imgColPTR + 'd1);
-    end
-    else
-    begin
-        {imgRowPTR,imgColPTR} <= {imgRowPTR,imgColPTR};
-    end
+//================================
+//  I/O
+//================================
+always @(*)
+begin: LBP_MEM_CTR
+    lbp_addr  = state_WB ? row_ptr*(IMG_WIDTH) + col_ptr : 'dz;
+    lbp_data  = acc_ff;
+    lbp_valid = state_WB;
 end
 
 always @(*)
-begin
-    case(cnt)
-        3'd0:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR - 7'd1,imgColPTR - 7'd1};
-        3'd1:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR - 7'd1,imgColPTR};
-        3'd2:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR - 7'd1,imgColPTR + 7'd1};
-        3'd3:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR,imgColPTR-7'd1};
-        3'd4:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR,imgColPTR + 7'd1};
-        3'd5:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR + 7'd1,imgColPTR - 7'd1};
-        3'd6:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR + 7'd1,imgColPTR};
-        3'd7:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR + 7'd1,imgColPTR + 7'd1};
-        default:
-            {imgRowOffsetPTR,imgColOffsetPTR} <= {imgRowPTR,imgColPTR};
-    endcase
-end
-
-//cnt
-always @(posedge clk or posedge reset)
-begin
-    if(reset)
+begin: GRAY_MEM_CTR
+    if(state_RD_CENTER)
     begin
-        cnt <= 'd0;
+        gray_addr = row_ptr * (IMG_WIDTH) + col_ptr;
     end
-    else if(STATE_LBP && gray_ready)
+    else if(state_RD_SURROUND_PIXEL)
     begin
-        cnt <= Local_LBP_done_WB_flag ? 'd0 : (gray_ready ? (cnt + 'd1) : cnt);
+        gray_addr = offset_row * (IMG_WIDTH) + offset_col;
     end
     else
     begin
-        cnt <= cnt;
+        gray_addr = 'dz;
+    end
+
+    gray_req  = state_RD_CENTER || state_RD_SURROUND_PIXEL;
+end
+
+//================================
+//  COUNTERS
+//================================
+always @(posedge clk or posedge reset)
+begin: OFFFSET_CNT
+    //synopsys_translate_off
+    #`C2Q;
+    //synopsys_translate_on
+    if(reset)
+    begin
+        offset_cnt <= 0;
+    end
+    else if(state_RD_CENTER)
+    begin
+        offset_cnt <= 0;
+    end
+    else if(state_ACC)
+    begin
+        offset_cnt <= offset_cnt + 1;
+    end
+    else
+    begin
+        offset_cnt <= offset_cnt;
     end
 end
 
-//I/O
-assign pixelValue_i = gray_data;
-assign gray_addr = STATE_RD_PIXEL ?  {imgRowPTR,imgColPTR}: {imgRowOffsetPTR,imgColOffsetPTR};
-assign gray_req  = STATE_LBP;
-assign lbp_addr  = gray_addr;
-assign lbp_data  = lbp_temp_wr;
-assign lbp_valid = Local_LBP_done_WB_flag;
-assign finish = STATE_DONE;
-
-
-//----------------------------DP------------------------//
+//================================
+//  POINTERS
+//================================
 always @(posedge clk or posedge reset)
-begin
-    lbp_tempReg_rd <= reset ? 'd0 : (Local_LBP_done_WB_flag ?  'd0 : lbp_temp_wr);
+begin: PTRS
+    //synopsys_translate_off
+    #`C2Q;
+    //synopsys_translate_on
+    if(reset)
+    begin
+        row_ptr <= 1;
+        col_ptr <= 1;
+    end
+    else if(state_WB)
+    begin
+        row_ptr <= imgRightBoundReach_f ? row_ptr+1 : row_ptr;
+        col_ptr <= imgRightBoundReach_f ? 1 : col_ptr + 1;
+    end
+    else
+    begin
+        row_ptr <= row_ptr;
+        col_ptr <= col_ptr;
+    end
 end
-assign lbp_temp_wr = lbp_tempReg_rd + shift_weighted_result;
+//================================
+//  DET_SURROUNDING_PIXEL_VALUE
+//================================
+always @(*)
+begin: DET_PIXEL_VALUE
+    case(offset_cnt)
+        'd0:
+        begin
+            surrounding_pixel_value = 8'b0000_0001;
+            offset_row = row_ptr - 1;
+            offset_col = col_ptr - 1;
+        end
+        'd1:
+        begin
+            surrounding_pixel_value = 8'b0000_0010;
+            offset_row = row_ptr - 1;
+            offset_col = col_ptr;
+        end
+        'd2:
+        begin
+            surrounding_pixel_value = 8'b0000_0100;
+            offset_row = row_ptr - 1;
+            offset_col = col_ptr + 1;
+        end
+        'd3:
+        begin
+            surrounding_pixel_value = 8'b0000_1000;
+            offset_row = row_ptr;
+            offset_col = col_ptr - 1;
+        end
+        'd4:
+        begin
+            surrounding_pixel_value = 8'b0001_0000;
+            offset_row = row_ptr;
+            offset_col = col_ptr+1;
+        end
+        'd5:
+        begin
+            surrounding_pixel_value = 8'b0010_0000;
+            offset_row = row_ptr+1;
+            offset_col = col_ptr-1;
+        end
+        'd6:
+        begin
+            surrounding_pixel_value = 8'b0100_0000;
+            offset_row = row_ptr+1;
+            offset_col = col_ptr;
+        end
+        'd7:
+        begin
+            surrounding_pixel_value = 8'b1000_0000;
+            offset_row = row_ptr+1;
+            offset_col = col_ptr+1;
+        end
+        default:
+        begin
+            surrounding_pixel_value = 8'b0000_0001;
+            offset_row = row_ptr;
+            offset_col = col_ptr;
+        end
+    endcase
+end
 
+//================================
+//  RD_GARY_DATA
+//================================
 always @(posedge clk or posedge reset)
-begin
-    centerPixelReg <= reset ? 'd0 : (STATE_RD_PIXEL ?  gray_data : centerPixelReg);
+begin: RD_GRAY_DATA
+    //synopsys_translate_off
+    #`C2Q;
+    //synopsys_translate_on
+    if(reset)
+    begin
+        center_pixel_ff <= 8'd0;
+        surrounding_pixel_ff <= 8'd0;
+    end
+    else if(state_RD_CENTER)
+    begin
+        center_pixel_ff <= gray_data;
+        surrounding_pixel_ff <= surrounding_pixel_ff;
+    end
+    else if(state_RD_SURROUND_PIXEL)
+    begin
+        center_pixel_ff <= center_pixel_ff;
+        surrounding_pixel_ff <= gray_data;
+    end
+    else
+    begin
+        center_pixel_ff <= center_pixel_ff;
+        surrounding_pixel_ff <= surrounding_pixel_ff;
+    end
 end
 
-assign threshold_compared_gt = ( pixelValue_i >= centerPixelReg);
-assign local_threshold     =   threshold_compared_gt ? 1 : 0;
-assign shift_weighted_result = local_threshold << cnt;
-
-
+//================================
+//  ACCUMULATION
+//================================
+always @(posedge clk or posedge reset)
+begin: ACCUMULATION
+    //synopsys_translate_off
+    #`C2Q;
+    //synopsys_translate_on
+    if(reset)
+    begin
+        acc_ff <= 8'd0;
+    end
+    else if(state_ACC)
+    begin
+        acc_ff <= (surrounding_pixel_ff >= center_pixel_ff) ? (surrounding_pixel_value + acc_ff) : acc_ff;
+    end
+    else if(state_RD_CENTER)
+    begin
+        acc_ff <= 8'd0;
+    end
+    else
+    begin
+        acc_ff <= acc_ff;
+    end
+end
 
 endmodule

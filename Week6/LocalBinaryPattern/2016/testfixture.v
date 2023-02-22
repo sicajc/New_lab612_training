@@ -3,8 +3,8 @@
 `define SDFFILE    "./SYN/LBP_syn.sdf"	  // Modify your sdf file name
 `define End_CYCLE  100000000              // Modify cycle times once your design need more cycle times!
 
-`define PAT        "./Exercise/pattern1.dat"    
-`define EXP        "./Exercise/golden1.dat"     
+`define PAT        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week6/LocalBinaryPattern/2016/pattern1.dat"
+`define EXP        "C:/Users/HIBIKI/Desktop/New_LAB612_Training/Week6/LocalBinaryPattern/2016/golden1.dat"
 
 
 module testfixture;
@@ -32,12 +32,12 @@ reg [7:0] gray_data;
 reg gray_ready = 0;
 integer i;
 
-   LBP LBP( .clk(clk), .reset(reset), 
-            .gray_addr(gray_addr), .gray_req(gray_req), .gray_ready(gray_ready), .gray_data(gray_data), 
+   LBP LBP( .clk(clk), .reset(reset),
+            .gray_addr(gray_addr), .gray_req(gray_req), .gray_ready(gray_ready), .gray_data(gray_data),
 			.lbp_addr(lbp_addr), .lbp_valid(lbp_valid), .lbp_data(lbp_data), .finish(finish));
-			
+
    lbp_mem u_lbp_mem(.lbp_valid(lbp_valid), .lbp_data(lbp_data), .lbp_addr(lbp_addr), .clk(clk));
-   
+
 
 `ifdef SDF
 	initial $sdf_annotate(`SDFFILE, LBP);
@@ -48,33 +48,33 @@ initial	$readmemh (`EXP, exp_mem);
 
 always begin #(`CYCLE/2) clk = ~clk; end
 
-initial begin
-	$fsdbDumpfile("LBP.fsdb");
-	$fsdbDumpvars;
-end
+// initial begin
+// 	$fsdbDumpfile("LBP.fsdb");
+// 	$fsdbDumpvars;
+// end
 
 initial begin  // data input
-   @(negedge clk)  reset = 1'b1; 
-   #(`CYCLE*2);    reset = 1'b0; 
+   @(negedge clk)  reset = 1'b1;
+   #(`CYCLE*2);    reset = 1'b0;
    @(negedge clk)  gray_ready = 1'b1;
-    while (finish == 0) begin             
+    while (finish == 0) begin
       if( gray_req ) begin
-         gray_data = gray_mem[gray_addr];  
-      end 
+         gray_data = gray_mem[gray_addr];
+      end
       else begin
-         gray_data = 'hz;  
-      end                    
-      @(negedge clk); 
-    end     
+         gray_data = 'hz;
+      end
+      @(negedge clk);
+    end
     gray_ready = 0; gray_data='hz;
-	@(posedge clk) result_compare = 1; 
+	@(posedge clk) result_compare = 1;
 end
 
 initial begin // result compare
 	$display("-----------------------------------------------------\n");
  	$display("START!!! Simulation Start .....\n");
  	$display("-----------------------------------------------------\n");
-	#(`CYCLE*3); 
+	#(`CYCLE*3);
 	wait( finish ) ;
 	@(posedge clk); @(posedge clk);
 	for (i=0; i <N_PAT ; i=i+1) begin
@@ -84,18 +84,18 @@ initial begin // result compare
 					err = err;
 				end
 				else begin
-					//$display("pixel %d is FAIL !!", i); 
+					//$display("pixel %d is FAIL !!", i);
 					err = err+1;
 					if (err <= 10) $display("Output pixel %d are wrong!", i);
 					if (err == 11) begin $display("Find the wrong pixel reached a total of more than 10 !, Please check the code .....\n");  end
 				end
-				if( ((i%1000) === 0) || (i == 16383))begin  
+				if( ((i%1000) === 0) || (i == 16383))begin
 					if ( err === 0)
       					$display("Output pixel: 0 ~ %d are correct!\n", i);
 					else
 					$display("Output Pixel: 0 ~ %d are wrong ! The wrong pixel reached a total of %d or more ! \n", i, err);
-					
-  				end					
+
+  				end
 				exp_num = exp_num + 1;
 	end
 	over = 1;
@@ -112,7 +112,7 @@ initial  begin
 end
 
 initial begin
-      @(posedge over)      
+      @(posedge over)
       if((over) && (exp_num!='d0)) begin
          $display("-----------------------------------------------------\n");
          if (err == 0)  begin
@@ -122,12 +122,12 @@ initial begin
          else begin
             $display("There are %d errors!\n", err);
             $display("-----------------------------------------------------\n");
-	    
+
          end
       end
       #(`CYCLE/2); $finish;
 end
-   
+
 endmodule
 
 
@@ -144,12 +144,7 @@ initial begin
 	for (i=0; i<=16383; i=i+1) LBP_M[i] = 0;
 end
 
-always@(negedge clk) 
+always@(negedge clk)
 	if (lbp_valid) LBP_M[ lbp_addr ] <= lbp_data;
 
 endmodule
-
-
-
-
-
