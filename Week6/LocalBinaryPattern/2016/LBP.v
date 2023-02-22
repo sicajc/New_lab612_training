@@ -76,6 +76,7 @@ reg[WORD-1:0] surrounding_pixel_value;
 reg[WORD-1:0] acc_ff;
 reg[WORD-1:0] center_pixel_ff;
 reg[WORD-1:0] surrounding_pixel_ff;
+reg[WORD-1:0] result_buf;
 
 //================================
 //  CONTROL FLAGS
@@ -152,11 +153,20 @@ end
 //================================
 //  I/O
 //================================
-always @(*)
+always @(posedge clk or posedge reset)
 begin: LBP_MEM_CTR
-    lbp_addr  = state_WB ? row_ptr*(IMG_WIDTH) + col_ptr : 'dz;
-    lbp_data  = acc_ff;
-    lbp_valid = state_WB;
+    if(reset)
+    begin
+        lbp_addr  <= 'd0;
+        lbp_data  <= 'd0;
+        lbp_valid <= 'd0;
+    end
+    else
+    begin
+        lbp_addr  <= state_WB ? row_ptr*(IMG_WIDTH) + col_ptr : 'dz;
+        lbp_data  <= acc_ff;
+        lbp_valid <= state_WB;
+    end
 end
 
 always @(*)
